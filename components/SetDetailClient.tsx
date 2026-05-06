@@ -1,0 +1,118 @@
+"use client";
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+
+import { CardList } from '@/components/CardList';
+import type { NormalizedCard } from '@/lib/types';
+
+export function SetDetailClient({ setId }: { setId: string }) {
+  const searchParams = useSearchParams();
+  const setNameFromQuery = searchParams.get("name") ?? "";
+
+  const [cards, setCards] = useState<NormalizedCard[]>([]);
+  const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!setId.trim()) {
+      setCards([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    fetch(`/api/search?setId=${encodeURIComponent(setId)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed loading set cards");
+        return res.json();
+      })
+      .then((data) => {
+        setCards(data.cards ?? []);
+      })
+      .catch(() => {
+        setCards([]);
+        setError("Could not load cards for this set.");
+      })
+      .finally(() => setLoading(false));
+  }, [setId]);
+
+  const setLabel = useMemo(() => {
+    if (setNameFromQuery.trim()) return setNameFromQuery;
+    return setId;
+  }, [setId, setNameFromQuery]);
+
+  const filteredCards = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return cards;
+    return cards.filter((card) => {
+      return (
+        card.name.toLowerCase().includes(q) ||
+        (card.localId?.toLowerCase().includes(q) ?? false)
+      );
+    });
+  }, [cards, filter]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div>
+        <Link
+          href="/sets"
+          style={{
+            color: "var(--accent)",
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.76rem",
+            textDecoration: "none",
+          }}
+        >
+          ← back to sets
+        </Link>
+      </div>
+
+      <div style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>
+        {setLabel} ({setId}) · {filteredCards.length}/{cards.length} cards{loading ? " · loading..." : ""}
+      </div>
+
+      <input
+        type="text"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        placeholder="Filter cards in this set by name or #"
+        style={{
+          width: "100%",
+          padding: "0.75rem 0.9rem",
+          background: "var(--bg-2)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          color: "var(--text)",
+          fontFamily: "var(--font-display)",
+          fontSize: "0.9rem",
+          outline: "none",
+          boxSizing: "border-box",
+        }}
+        onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+      />
+
+      {error && (
+        <div style={{ color: "var(--red)", fontSize: "0.8rem", fontFamily: "var(--font-mono)" }}>
+          {error}
+        </div>
+      )}
+
+      <CardList
+        cards={filteredCards}
+        mode="search"
+        emptyMessage={loading ? "Loading cards..." : "No cards found in this set"}
+      />
+    </div>
+  );
+}
