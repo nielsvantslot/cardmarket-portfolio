@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { CardList } from '@/components/CardList';
+import { searchService } from '@/lib/services/searchService';
 import type { NormalizedCard } from '@/lib/types';
 
 export function SetDetailClient({ setId }: { setId: string }) {
@@ -30,11 +31,7 @@ export function SetDetailClient({ setId }: { setId: string }) {
     setLoading(true);
     setError(null);
 
-    fetch(`/api/search?setId=${encodeURIComponent(setId)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed loading set cards");
-        return res.json();
-      })
+    searchService.getCardsBySetId(setId)
       .then((data) => {
         setCards(data.cards ?? []);
       })

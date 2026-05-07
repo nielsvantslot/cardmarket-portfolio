@@ -6,31 +6,18 @@ import {
   useState,
 } from 'react';
 
+import {
+  portfolioService,
+  type PortfolioService,
+} from './services/portfolioService';
+
 import type {
   AuthUser,
   PortfolioEntry,
   SealedProduct,
 } from './types';
 
-interface PortfolioResponse {
-  entries: PortfolioEntry[];
-  sealedItems: SealedProduct[];
-}
-
-interface SessionResponse {
-  user: AuthUser | null;
-}
-
-async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
-  const res = await fetch(input, init);
-  const data = (await res.json()) as T & { error?: string };
-  if (!res.ok) {
-    throw new Error(data.error ?? "Request failed");
-  }
-  return data;
-}
-
-export function usePortfolio() {
+export function usePortfolio(service: PortfolioService = portfolioService) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sealedItems, setSealedItems] = useState<SealedProduct[]>([]);
@@ -39,15 +26,15 @@ export function usePortfolio() {
   const [authLoading, setAuthLoading] = useState(true);
 
   const loadPortfolio = useCallback(async () => {
-    const data = await fetchJson<PortfolioResponse>("/api/portfolio");
+    const data = await service.getPortfolio();
     setEntries(data.entries ?? []);
     setSealedItems(data.sealedItems ?? []);
-  }, []);
+  }, [service]);
 
   const refresh = useCallback(async () => {
     setAuthLoading(true);
     try {
-      const session = await fetchJson<SessionResponse>("/api/auth/session");
+      const session = await service.getSession();
       setUser(session.user);
       await loadPortfolio();
     } catch {
@@ -65,11 +52,7 @@ export function usePortfolio() {
   }, [refresh]);
 
   const addCard = useCallback(async (cardId: string) => {
-    await fetchJson<{ entry: PortfolioEntry }>("/api/portfolio/cards", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardId, delta: 1 }),
-    });
+    await service.addCard(cardId);
 
     setEntries((prev) => {
       const existing = prev.find((entry) => entry.cardId === cardId);
@@ -81,23 +64,17 @@ export function usePortfolio() {
       );
     });
     setPortfolioMutationVersion((prev) => prev + 1);
-  }, []);
+  }, [service]);
 
   const removeCard = useCallback(async (cardId: string) => {
-    await fetchJson<{ removed: true }>(`/api/portfolio/cards?cardId=${encodeURIComponent(cardId)}`, {
-      method: "DELETE",
-    });
+    await service.removeCard(cardId);
 
     setEntries((prev) => prev.filter((entry) => entry.cardId !== cardId));
     setPortfolioMutationVersion((prev) => prev + 1);
-  }, []);
+  }, [service]);
 
   const updateQuantity = useCallback(async (cardId: string, quantity: number) => {
-    await fetchJson<{ entry?: PortfolioEntry }>("/api/portfolio/cards", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cardId, quantity }),
-    });
+    await service.updateCardQuantity(cardId, quantity);
 
     setEntries((prev) => {
       if (quantity <= 0) return prev.filter((entry) => entry.cardId !== cardId);
@@ -112,14 +89,14 @@ export function usePortfolio() {
       );
     });
     setPortfolioMutationVersion((prev) => prev + 1);
-  }, []);
+  }, [service]);
 
   const logout = useCallback(async () => {
-    await fetchJson<{ ok: true }>("/api/auth/logout", { method: "POST" });
+    await service.logout();
     setUser(null);
     setEntries([]);
     setSealedItems([]);
-  }, []);
+  }, [service]);
 
   const hasCard = useCallback(
     (cardId: string) => entries.some((entry) => entry.cardId === cardId),
@@ -132,32 +109,22 @@ export function usePortfolio() {
   );
 
   const addSealedItem = useCallback(async (item: Omit<SealedProduct, "id" | "addedAt">) => {
-    const data = await fetchJson<{ item: SealedProduct }>("/api/portfolio/sealed", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(item),
-    });
+    const data = await service.addSealedItem(item);
 
     setSealedItems((prev) => [data.item, ...prev]);
-  }, []);
+  }, [service]);
 
   const removeSealedItem = useCallback(async (id: string) => {
-    await fetchJson<{ removed: true }>(`/api/portfolio/sealed/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-    });
+    await service.removeSealedItem(id);
 
     setSealedItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+  }, [service]);
 
   const updateSealedItem = useCallback(async (id: string, patch: Partial<SealedProduct>) => {
-    const data = await fetchJson<{ item: SealedProduct }>(`/api/portfolio/sealed/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
+    const data = await service.updateSealedItem(id, patch);
 
     setSealedItems((prev) => prev.map((item) => (item.id === id ? data.item : item)));
-  }, []);
+  }, [service]);
 
   const submitSnapshot = useCallback(async (snapshot: {
     totalValue: number;
@@ -165,12 +132,8 @@ export function usePortfolio() {
     uniqueCards: number;
     reason?: "daily" | "portfolio-change";
   }) => {
-    await fetchJson<{ ok?: boolean; skipped?: boolean }>("/api/portfolio/snapshot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(snapshot),
-    });
-  }, []);
+    await service.submitSnapshot(snapshot);
+  }, [service]);
 
   return {
     user,

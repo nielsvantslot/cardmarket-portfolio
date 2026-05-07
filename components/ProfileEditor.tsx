@@ -8,6 +8,7 @@ import {
 import { useRouter } from 'next/navigation';
 
 import { usePortfolioContext } from '@/lib/portfolioContext';
+import { accountService } from '@/lib/services/accountService';
 import type { AuthUser } from '@/lib/types';
 
 interface ProfileEditorProps {
@@ -52,15 +53,7 @@ export function ProfileEditor({ mode, initialUser, title, description }: Profile
     setLoading(true);
 
     try {
-      const res = await fetch("/api/account/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, username, publicSlug, bio }),
-      });
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) {
-        throw new Error(data.error ?? "Unable to save profile");
-      }
+      await accountService.updateProfile({ name, username, publicSlug, bio });
 
       await refresh();
       setSaved(true);

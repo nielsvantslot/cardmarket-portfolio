@@ -10,9 +10,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { sortSetsNewestFirst } from '@/lib/api';
-import type { SetBrief } from '@/lib/types';
-
-type SearchSet = Pick<SetBrief, "id" | "name" | "cardCount" | "logo" | "symbol" | "releaseDate">;
+import {
+  searchService,
+  type SearchSet,
+} from '@/lib/services/searchService';
 
 export function SetsClient() {
   const [query, setQuery] = useState("");
@@ -24,11 +25,7 @@ export function SetsClient() {
     setLoading(true);
     setError(null);
 
-    fetch("/api/search?type=sets")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed loading sets");
-        return res.json();
-      })
+    searchService.getSets()
       .then((data) => {
         const next = (data.sets ?? []) as SearchSet[];
         setSets(sortSetsNewestFirst(next));

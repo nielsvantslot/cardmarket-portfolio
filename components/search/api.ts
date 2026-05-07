@@ -1,13 +1,7 @@
 import type { NormalizedCard } from '@/lib/types';
 
-import type { SearchCardsResponse } from './types';
+import { searchService } from '@/lib/services/searchService';
 
 export async function fetchCardsByQuery(query: string, signal?: AbortSignal): Promise<NormalizedCard[]> {
-  const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal });
-  if (!res.ok) {
-    throw new Error('Search failed');
-  }
-
-  const data = (await res.json()) as SearchCardsResponse;
-  return data.cards ?? [];
+  return searchService.searchCards(query, signal);
 }

@@ -13,6 +13,7 @@ import {
   normalizeCard,
 } from '@/lib/api';
 import { usePortfolioContext } from '@/lib/portfolioContext';
+import { portfolioService } from '@/lib/services/portfolioService';
 import type {
   NormalizedCard,
   PortfolioSnapshotPoint,
@@ -82,9 +83,8 @@ export function PortfolioList() {
   useEffect(() => {
     if (!hydrated) return;
 
-    fetch("/api/portfolio/history")
-      .then((res) => (res.ok ? res.json() : { snapshots: [] }))
-      .then((data: { snapshots?: PortfolioSnapshotPoint[] }) => {
+    portfolioService.getPortfolioHistory()
+      .then((data) => {
         setHistory(data.snapshots ?? []);
       })
       .catch(() => setHistory([]));
