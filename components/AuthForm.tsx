@@ -9,6 +9,8 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { authService } from '@/lib/services/authService';
+
 interface AuthFormProps {
   mode: "login" | "register";
 }
@@ -34,29 +36,16 @@ export function AuthForm({ mode }: AuthFormProps) {
     setError(null);
     setLoading(true);
 
-    const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
     if (isRegister && password !== confirmPassword) {
       setError("Passwords do not match.");
       setLoading(false);
       return;
     }
 
-    const body = isRegister ? { email, password } : { email, password };
-
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = (await res.json()) as {
-        error?: string;
-        user?: { username?: string | null; publicSlug?: string | null };
-      };
-      if (!res.ok) {
-        throw new Error(data.error || "Request failed");
-      }
+      const data = await (isRegister
+        ? authService.register(email, password)
+        : authService.login(email, password));
 
       const needsOnboarding = !data.user?.username || !data.user?.publicSlug;
       router.push(isRegister || needsOnboarding ? "/onboarding" : "/portfolio");
