@@ -38,6 +38,11 @@ body {
     radial-gradient(ellipse 40% 30% at 20% 80%, rgba(62, 255, 160, 0.03) 0%, transparent 50%);
 }
 
+h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-2); }
 ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
