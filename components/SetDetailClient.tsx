@@ -10,10 +10,13 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { CardList } from '@/components/CardList';
+import { SkeletonCard } from '@/components/SkeletonCard';
+import { useAuth } from '@/lib/authContext';
 import { searchService } from '@/lib/services/searchService';
 import type { NormalizedCard } from '@/lib/types';
 
 export function SetDetailClient({ setId }: { setId: string }) {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const setNameFromQuery = searchParams.get("name") ?? "";
 
@@ -105,11 +108,20 @@ export function SetDetailClient({ setId }: { setId: string }) {
         </div>
       )}
 
-      <CardList
-        cards={filteredCards}
-        mode="search"
-        emptyMessage={loading ? "Loading cards..." : "No cards found in this set"}
-      />
+      {loading && cards.length === 0 ? (
+        <div className="card-grid">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <SkeletonCard key={`card-skeleton-${i}`} isAuthenticated={!!user} />
+          ))}
+        </div>
+      ) : (
+        <CardList
+          cards={filteredCards}
+          mode="search"
+          animateItems={false}
+          emptyMessage={loading ? "Loading cards..." : "No cards found in this set"}
+        />
+      )}
     </div>
   );
 }
