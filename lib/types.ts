@@ -5,6 +5,11 @@ export interface CardBrief {
   localId: string;
   name: string;
   image?: string;
+  set?: {
+    id: string;
+    name: string;
+    serie?: { id: string; name: string };
+  };
 }
 
 // ── Pricing (from full card) ──────────────────────────────────────────────────
@@ -93,6 +98,22 @@ export interface PortfolioEntry {
   cardId: string;
   quantity: number;
   addedAt: number;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  username: string | null;
+  publicSlug: string | null;
+  bio: string | null;
+}
+
+export interface PortfolioSnapshotPoint {
+  totalValue: number;
+  totalCards: number;
+  uniqueCards: number;
+  createdAt: string;
 }
 
 // ── Sealed Product ────────────────────────────────────────────────────────────

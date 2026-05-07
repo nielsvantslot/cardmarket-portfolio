@@ -1,130 +1,177 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import type { PortfolioEntry, SealedProduct } from "./types";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 
-const STORAGE_KEY = "card-portfolio-v1";
-const SEALED_STORAGE_KEY = "card-portfolio-sealed-v1";
+import type {
+  AuthUser,
+  PortfolioEntry,
+  SealedProduct,
+} from './types';
 
-function loadPortfolio(): PortfolioEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as PortfolioEntry[];
-  } catch {
-    return [];
+interface PortfolioResponse {
+  entries: PortfolioEntry[];
+  sealedItems: SealedProduct[];
+}
+
+interface SessionResponse {
+  user: AuthUser | null;
+}
+
+async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, init);
+  const data = (await res.json()) as T & { error?: string };
+  if (!res.ok) {
+    throw new Error(data.error ?? "Request failed");
   }
-}
-
-function savePortfolio(entries: PortfolioEntry[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {}
-}
-
-function loadSealed(): SealedProduct[] {
-  try {
-    const raw = localStorage.getItem(SEALED_STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as SealedProduct[];
-  } catch {
-    return [];
-  }
-}
-
-function saveSealed(items: SealedProduct[]) {
-  try {
-    localStorage.setItem(SEALED_STORAGE_KEY, JSON.stringify(items));
-  } catch {}
-}
-
-function generateId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return data;
 }
 
 export function usePortfolio() {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sealedItems, setSealedItems] = useState<SealedProduct[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  const loadPortfolio = useCallback(async () => {
+    const data = await fetchJson<PortfolioResponse>("/api/portfolio");
+    setEntries(data.entries ?? []);
+    setSealedItems(data.sealedItems ?? []);
+  }, []);
+
+  const refresh = useCallback(async () => {
+    setAuthLoading(true);
+    try {
+      const session = await fetchJson<SessionResponse>("/api/auth/session");
+      setUser(session.user);
+      await loadPortfolio();
+    } catch {
+      setUser(null);
+      setEntries([]);
+      setSealedItems([]);
+    } finally {
+      setAuthLoading(false);
+      setHydrated(true);
+    }
+  }, [loadPortfolio]);
 
   useEffect(() => {
-    setEntries(loadPortfolio());
-    setSealedItems(loadSealed());
-    setHydrated(true);
-  }, []);
+    void refresh();
+  }, [refresh]);
 
-  const addCard = useCallback((cardId: string) => {
-    setEntries((prev) => {
-      const existing = prev.find((e) => e.cardId === cardId);
-      const next = existing
-        ? prev.map((e) =>
-            e.cardId === cardId ? { ...e, quantity: e.quantity + 1 } : e
-          )
-        : [...prev, { cardId, quantity: 1, addedAt: Date.now() }];
-      savePortfolio(next);
-      return next;
+  const addCard = useCallback(async (cardId: string) => {
+    await fetchJson<{ entry: PortfolioEntry }>("/api/portfolio/cards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId, delta: 1 }),
     });
-  }, []);
 
-  const removeCard = useCallback((cardId: string) => {
     setEntries((prev) => {
-      const next = prev.filter((e) => e.cardId !== cardId);
-      savePortfolio(next);
-      return next;
-    });
-  }, []);
-
-  const updateQuantity = useCallback((cardId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeCard(cardId);
-      return;
-    }
-    setEntries((prev) => {
-      const next = prev.map((e) =>
-        e.cardId === cardId ? { ...e, quantity } : e
+      const existing = prev.find((entry) => entry.cardId === cardId);
+      if (!existing) {
+        return [...prev, { cardId, quantity: 1, addedAt: Date.now() }];
+      }
+      return prev.map((entry) =>
+        entry.cardId === cardId ? { ...entry, quantity: entry.quantity + 1 } : entry
       );
-      savePortfolio(next);
-      return next;
     });
-  }, [removeCard]);
+  }, []);
+
+  const removeCard = useCallback(async (cardId: string) => {
+    await fetchJson<{ removed: true }>(`/api/portfolio/cards?cardId=${encodeURIComponent(cardId)}`, {
+      method: "DELETE",
+    });
+
+    setEntries((prev) => prev.filter((entry) => entry.cardId !== cardId));
+  }, []);
+
+  const updateQuantity = useCallback(async (cardId: string, quantity: number) => {
+    await fetchJson<{ entry?: PortfolioEntry }>("/api/portfolio/cards", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId, quantity }),
+    });
+
+    setEntries((prev) => {
+      if (quantity <= 0) return prev.filter((entry) => entry.cardId !== cardId);
+
+      const exists = prev.some((entry) => entry.cardId === cardId);
+      if (!exists) {
+        return [...prev, { cardId, quantity, addedAt: Date.now() }];
+      }
+
+      return prev.map((entry) =>
+        entry.cardId === cardId ? { ...entry, quantity } : entry
+      );
+    });
+  }, []);
+
+  const logout = useCallback(async () => {
+    await fetchJson<{ ok: true }>("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    setEntries([]);
+    setSealedItems([]);
+  }, []);
 
   const hasCard = useCallback(
-    (cardId: string) => entries.some((e) => e.cardId === cardId),
+    (cardId: string) => entries.some((entry) => entry.cardId === cardId),
     [entries]
   );
 
   const getQuantity = useCallback(
-    (cardId: string) => entries.find((e) => e.cardId === cardId)?.quantity ?? 0,
+    (cardId: string) => entries.find((entry) => entry.cardId === cardId)?.quantity ?? 0,
     [entries]
   );
 
-  // ── Sealed ────────────────────────────────────────────────────────────────
-
-  const addSealedItem = useCallback((item: Omit<SealedProduct, "id" | "addedAt">) => {
-    setSealedItems((prev) => {
-      const next = [...prev, { ...item, id: generateId(), addedAt: Date.now() }];
-      saveSealed(next);
-      return next;
+  const addSealedItem = useCallback(async (item: Omit<SealedProduct, "id" | "addedAt">) => {
+    const data = await fetchJson<{ item: SealedProduct }>("/api/portfolio/sealed", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
     });
+
+    setSealedItems((prev) => [data.item, ...prev]);
   }, []);
 
-  const removeSealedItem = useCallback((id: string) => {
-    setSealedItems((prev) => {
-      const next = prev.filter((i) => i.id !== id);
-      saveSealed(next);
-      return next;
+  const removeSealedItem = useCallback(async (id: string) => {
+    await fetchJson<{ removed: true }>(`/api/portfolio/sealed/${encodeURIComponent(id)}`, {
+      method: "DELETE",
     });
+
+    setSealedItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  const updateSealedItem = useCallback((id: string, patch: Partial<SealedProduct>) => {
-    setSealedItems((prev) => {
-      const next = prev.map((i) => i.id === id ? { ...i, ...patch } : i);
-      saveSealed(next);
-      return next;
+  const updateSealedItem = useCallback(async (id: string, patch: Partial<SealedProduct>) => {
+    const data = await fetchJson<{ item: SealedProduct }>(`/api/portfolio/sealed/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+
+    setSealedItems((prev) => prev.map((item) => (item.id === id ? data.item : item)));
+  }, []);
+
+  const submitSnapshot = useCallback(async (snapshot: {
+    totalValue: number;
+    totalCards: number;
+    uniqueCards: number;
+  }) => {
+    await fetchJson<{ ok?: boolean; skipped?: boolean }>("/api/portfolio/snapshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(snapshot),
     });
   }, []);
 
   return {
+    user,
+    authLoading,
+    refresh,
+    logout,
     entries,
     sealedItems,
     hydrated,
@@ -136,5 +183,6 @@ export function usePortfolio() {
     addSealedItem,
     removeSealedItem,
     updateSealedItem,
+    submitSnapshot,
   };
 }

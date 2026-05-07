@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String             @id @default(cuid())
+  email          String             @unique
+  name           String?
+  username       String?            @unique
+  publicSlug     String?            @unique
+  bio            String?
+  passwordHash   String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  portfolioCards PortfolioCard[]
+  sealedItems    SealedItem[]
+  snapshots      PortfolioSnapshot[]
+}
+
+model PortfolioCard {
+  id        String   @id @default(cuid())
+  userId    String
+  cardId    String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId])
+  @@index([userId])
+}
+
+model SealedItem {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  setName       String?
+  type          String
+  condition     String
+  quantity      Int      @default(1)
+  purchasePrice Float?
+  currency      String?
+  notes         String?
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PortfolioSnapshot {
+  id         String   @id @default(cuid())
+  userId     String
+  totalValue Float
+  totalCards Int
+  uniqueCards Int
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}

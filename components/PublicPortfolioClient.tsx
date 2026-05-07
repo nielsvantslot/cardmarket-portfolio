@@ -1,0 +1,184 @@
+"use client";
+
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import Link from 'next/link';
+
+import { CardList } from '@/components/CardList';
+import {
+  getCards,
+  normalizeCard,
+} from '@/lib/api';
+import type {
+  NormalizedCard,
+  PortfolioEntry,
+} from '@/lib/types';
+
+interface PublicPortfolioClientProps {
+  ownerName: string;
+  entries: PortfolioEntry[];
+}
+
+export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioClientProps) {
+  const [cardsMap, setCardsMap] = useState<Map<string, NormalizedCard>>(new Map());
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const ids = entries.map((entry) => entry.cardId);
+    if (ids.length === 0) return;
+
+    getCards(ids).then((result) => {
+      const next = new Map<string, NormalizedCard>();
+      result.forEach((card, id) => {
+        next.set(id, normalizeCard(card));
+      });
+      setCardsMap(next);
+    });
+  }, [entries]);
+
+  const totalCards = entries.reduce((sum, entry) => sum + entry.quantity, 0);
+  const totalValue = entries.reduce((sum, entry) => {
+    const card = cardsMap.get(entry.cardId);
+    if (!card?.price) return sum;
+    return sum + card.price * entry.quantity;
+  }, 0);
+
+  const quantities = useMemo(() => {
+    const next: Record<string, number> = {};
+    entries.forEach((entry) => {
+      next[entry.cardId] = entry.quantity;
+    });
+    return next;
+  }, [entries]);
+
+  const normalizedCards = useMemo(() => {
+    const trimmedQuery = query.trim().toLowerCase();
+
+    return entries
+      .map((entry) => ({
+        entry,
+        card: cardsMap.get(entry.cardId),
+      }))
+      .filter((row): row is { entry: PortfolioEntry; card: NormalizedCard } => Boolean(row.card))
+      .filter(({ entry, card }) => {
+        if (!trimmedQuery) return true;
+
+        const haystack = [
+          card.name,
+          card.setName,
+          card.localId,
+          entry.cardId,
+          card.rarity,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(trimmedQuery);
+      })
+      .sort((left, right) => {
+        const rightWorth = (right.card.price ?? 0) * right.entry.quantity;
+        const leftWorth = (left.card.price ?? 0) * left.entry.quantity;
+        if (rightWorth !== leftWorth) return rightWorth - leftWorth;
+        return left.card.name.localeCompare(right.card.name);
+      })
+      .map(({ card }) => card);
+  }, [cardsMap, entries, query]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div>
+        <h1 style={{
+          fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
+          fontWeight: 800,
+          letterSpacing: "-0.04em",
+          lineHeight: 1,
+          marginBottom: "0.4rem",
+        }}>
+          {ownerName}&apos;s Portfolio
+        </h1>
+        <p style={{ marginTop: "0.35rem", color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>
+          Public collection snapshot
+        </p>
+      </div>
+
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+        gap: "1rem",
+      }}>
+        <StatCard label="Total Cards" value={String(totalCards)} />
+        <StatCard label="Unique Cards" value={String(entries.length)} />
+        <StatCard label="Portfolio Value" value={totalValue > 0 ? `~${totalValue.toFixed(2)}` : "—"} accent />
+      </div>
+
+      <input
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder={`Search ${ownerName}'s portfolio`}
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "0.8rem 0.95rem",
+          background: "var(--bg-2)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          color: "var(--text)",
+          fontFamily: "var(--font-display)",
+          fontSize: "0.95rem",
+          outline: "none",
+        }}
+      />
+
+      <CardList
+        cards={normalizedCards}
+        mode="public"
+        quantities={quantities}
+        emptyMessage={query.trim() ? `No cards found for "${query.trim()}"` : "No public cards yet."}
+      />
+
+      <div style={{ textAlign: "center", marginTop: "0.25rem" }}>
+        <Link href="/register" style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>
+          Create your own portfolio
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div style={{
+      background: "var(--bg-2)",
+      border: "1px solid var(--border)",
+      borderRadius: 10,
+      padding: "1.25rem 1.5rem",
+    }}>
+      <div style={{
+        fontSize: "0.7rem",
+        color: "var(--text-3)",
+        fontFamily: "var(--font-mono)",
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        marginBottom: "0.4rem",
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: "1.75rem",
+        fontWeight: 800,
+        fontFamily: "var(--font-display)",
+        letterSpacing: "-0.04em",
+        color: accent ? "var(--green)" : "var(--text)",
+        lineHeight: 1,
+      }}>
+        {value}
+      </div>
+    </div>
+  );
+}

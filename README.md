@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CardVault
 
-## Getting Started
+CardVault is a Pokemon card portfolio tracker built with Next.js.
 
-First, run the development server:
+## What changed
+
+- Filters out TCG Pocket cards from search and hydrated card results.
+- Added account-based authentication (register/login/logout).
+- Migrated portfolio + sealed products from localStorage to Postgres-backed persistence.
+- Added portfolio value snapshots and value-history graph on the portfolio page.
+- Added Dockerized Postgres and Prisma ORM setup for development.
+
+## Stack
+
+- Next.js 16
+- React 19
+- Prisma ORM
+- PostgreSQL (Docker)
+- Recharts (portfolio history graph)
+
+## Development setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Start Postgres:
+
+```bash
+npm run db:up
+```
+
+3. Confirm `.env` values (already scaffolded for local dev):
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/card_portfolio?schema=public"
+AUTH_SECRET="dev-only-change-me-before-production"
+```
+
+4. Run Prisma migration + client generation:
+
+```bash
+npm run prisma:migrate
+npm run prisma:generate
+```
+
+5. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Useful commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run db:up` - start local Postgres
+- `npm run db:down` - stop local Postgres
+- `npm run prisma:migrate` - create/apply schema migrations
+- `npm run prisma:generate` - regenerate Prisma client
+- `npm run prisma:studio` - open Prisma Studio
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Notes
 
-## Learn More
+- Session auth uses an httpOnly cookie signed with `AUTH_SECRET`.
+- Portfolio history snapshots are throttled server-side (6-hour cooldown) to avoid duplicate points.
+- For production, rotate `AUTH_SECRET` and use a managed Postgres instance.
 
-To learn more about Next.js, take a look at the following resources:
+## Vercel deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Provision a hosted Postgres database (Neon, Supabase, Railway, etc.).
+2. In Vercel project settings, set environment variables:
+	- `DATABASE_URL`
+	- `AUTH_SECRET`
+3. Set Build Command to:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run vercel-build
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project also runs `prisma generate` automatically on `postinstall` to make sure the Prisma client is available in Vercel builds.

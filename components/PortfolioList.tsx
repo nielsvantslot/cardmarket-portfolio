@@ -1,11 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePortfolioContext } from "@/lib/portfolioContext";
-import { getCards, normalizeCard } from "@/lib/api";
-import type { NormalizedCard } from "@/lib/types";
-import { CardList } from "./CardList";
-import Link from "next/link";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import Link from 'next/link';
+
+import {
+  getCards,
+  normalizeCard,
+} from '@/lib/api';
+import { usePortfolioContext } from '@/lib/portfolioContext';
+import type {
+  NormalizedCard,
+  PortfolioSnapshotPoint,
+} from '@/lib/types';
+
+import { CardList } from './CardList';
+import { PortfolioHistoryChart } from './PortfolioHistoryChart';
 
 function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
@@ -40,9 +54,22 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
 }
 
 export function PortfolioList() {
-  const { entries, hydrated, removeCard, updateQuantity } = usePortfolioContext();
+  const { entries, hydrated, removeCard, updateQuantity, submitSnapshot } = usePortfolioContext();
   const [cards, setCards] = useState<Map<string, NormalizedCard>>(new Map());
+  const [history, setHistory] = useState<PortfolioSnapshotPoint[]>([]);
   const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!hydrated) return;
+
+    fetch("/api/portfolio/history")
+      .then((res) => (res.ok ? res.json() : { snapshots: [] }))
+      .then((data: { snapshots?: PortfolioSnapshotPoint[] }) => {
+        setHistory(data.snapshots ?? []);
+      })
+      .catch(() => setHistory([]));
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated || entries.length === 0) {
@@ -120,10 +147,6 @@ export function PortfolioList() {
   }
 
   // Compute stats
-  const normalizedCards = entries
-    .map((e) => cards.get(e.cardId))
-    .filter(Boolean) as NormalizedCard[];
-
   const quantities: Record<string, number> = {};
   entries.forEach((e) => { quantities[e.cardId] = e.quantity; });
 
@@ -139,6 +162,51 @@ export function PortfolioList() {
       cardsWithPrice++;
     }
   });
+
+  const normalizedCards = useMemo(() => {
+    const filtered = entries
+      .map((entry) => ({
+        entry,
+        card: cards.get(entry.cardId),
+      }))
+      .filter((row): row is { entry: typeof entries[number]; card: NormalizedCard } => Boolean(row.card));
+
+    const trimmedQuery = query.trim().toLowerCase();
+    const visible = trimmedQuery
+      ? filtered.filter(({ entry, card }) => {
+          const haystack = [
+            card.name,
+            card.setName,
+            card.localId,
+            entry.cardId,
+            card.rarity,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return haystack.includes(trimmedQuery);
+        })
+      : filtered;
+
+    return visible
+      .sort((left, right) => {
+        const rightWorth = (right.card.price ?? 0) * right.entry.quantity;
+        const leftWorth = (left.card.price ?? 0) * left.entry.quantity;
+        if (rightWorth !== leftWorth) return rightWorth - leftWorth;
+        return left.card.name.localeCompare(right.card.name);
+      })
+      .map(({ card }) => card);
+  }, [cards, entries, query]);
+
+  useEffect(() => {
+    if (!hydrated || entries.length === 0) return;
+
+    void submitSnapshot({
+      totalValue,
+      totalCards,
+      uniqueCards,
+    });
+  }, [entries.length, hydrated, submitSnapshot, totalCards, totalValue, uniqueCards]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -174,6 +242,27 @@ export function PortfolioList() {
         </div>
       )}
 
+      <PortfolioHistoryChart snapshots={history} />
+
+      <input
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search your portfolio"
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "0.8rem 0.95rem",
+          background: "var(--bg-2)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          color: "var(--text)",
+          fontFamily: "var(--font-display)",
+          fontSize: "0.95rem",
+          outline: "none",
+        }}
+      />
+
       {/* Card grid */}
       <CardList
         cards={normalizedCards}
@@ -181,7 +270,7 @@ export function PortfolioList() {
         quantities={quantities}
         onQuantityChange={updateQuantity}
         onRemove={removeCard}
-        emptyMessage="Loading cards…"
+        emptyMessage={query.trim() ? `No cards found for "${query.trim()}"` : "Loading cards…"}
       />
     </div>
   );

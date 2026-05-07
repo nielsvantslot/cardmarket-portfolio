@@ -39,6 +39,42 @@ function isLocalIdToken(token: string): boolean {
   return /^(?=.*\d)[a-z0-9-]+$/i.test(token);
 }
 
+function isPocketSerieId(serieId?: string): boolean {
+  return (serieId ?? "").toLowerCase() === "tcgp";
+}
+
+function isPocketAssetUrl(value?: string): boolean {
+  return (value ?? "").toLowerCase().includes("/tcgp/");
+}
+
+function isPocketCardId(id?: string): boolean {
+  return /^(a|b)\d/i.test(id ?? "") && !String(id ?? "").toLowerCase().startsWith("bw");
+}
+
+function isPocketSetName(name?: string): boolean {
+  return /\bpocket\b/i.test(name ?? "");
+}
+
+function isPocketBrief(card: CardBrief): boolean {
+  return Boolean(
+    isPocketSerieId(card.set?.serie?.id)
+    || isPocketSetName(card.set?.name)
+    || isPocketAssetUrl(card.image)
+    || isPocketCardId(card.id)
+  );
+}
+
+function isPocketFull(card: CardFull): boolean {
+  return Boolean(
+    isPocketSerieId(card.set?.serie?.id)
+    || isPocketSetName(card.set?.name)
+    || isPocketAssetUrl(card.image)
+    || isPocketAssetUrl(card.set?.logo)
+    || isPocketAssetUrl(card.set?.symbol)
+    || isPocketCardId(card.id)
+  );
+}
+
 async function comboSearch(query: string): Promise<NormalizedCard[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
@@ -86,6 +122,7 @@ async function comboSearch(query: string): Promise<NormalizedCard[]> {
   const ordered: NormalizedCard[] = [];
   for (const group of responses) {
     for (const card of group.data) {
+      if (isPocketBrief(card)) continue;
       if (seen.has(card.id)) continue;
       seen.add(card.id);
       ordered.push(briefToNormalized(card));
@@ -132,7 +169,7 @@ export async function searchSets(query = ""): Promise<SetBrief[]> {
 
 export async function getCardsBySetId(setId: string): Promise<NormalizedCard[]> {
   const id = setId.trim();
-  if (!id) return [];
+  if (!id || id.toLowerCase().includes("tcgp") || id.toLowerCase().includes("pocket") || isPocketCardId(id)) return [];
 
   const pages = Math.ceil(MAX_SET_CARDS / SET_CARDS_PAGE_SIZE);
   const pagePromises: Promise<CardBrief[] | null>[] = [];
@@ -167,12 +204,13 @@ async function hydrateNormalizedCards(cards: NormalizedCard[]): Promise<Normaliz
   const uniqueIds = Array.from(new Set(cards.map((card) => card.id)));
   const fullCards = await getCards(uniqueIds);
 
-  return cards.map((card) => {
+  return cards.flatMap((card) => {
     const full = fullCards.get(card.id);
-    if (!full) return card;
+    if (!full) return [card];
+    if (isPocketFull(full)) return [];
 
     const hydrated = normalizeCard(full);
-    return {
+    return [{
       ...card,
       ...hydrated,
       image: card.image ?? hydrated.image,
@@ -180,7 +218,7 @@ async function hydrateNormalizedCards(cards: NormalizedCard[]): Promise<Normaliz
       setId: hydrated.setId ?? card.setId,
       localId: hydrated.localId ?? card.localId,
       rarity: hydrated.rarity ?? card.rarity,
-    };
+    }];
   });
 }
 

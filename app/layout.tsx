@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { PortfolioProvider } from "@/lib/portfolioContext";
-import { Header } from "@/components/Header";
+import './globals.css';
+
+import type { Metadata } from 'next';
+
+import { Header } from '@/components/Header';
+import { PortfolioProvider } from '@/lib/portfolioContext';
 
 export const metadata: Metadata = {
   title: "CardVault — TCG Portfolio Tracker",
@@ -33,7 +35,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               fontSize: "0.72rem",
               fontFamily: "var(--font-mono)",
             }}>
-              powered by tcgdex.net • data updated hourly
             </footer>
           </div>
         </PortfolioProvider>

@@ -10,7 +10,7 @@ import type { NormalizedCard } from '@/lib/types';
 
 interface CardItemProps {
   card: NormalizedCard;
-  mode?: "search" | "portfolio";
+  mode?: "search" | "portfolio" | "public";
   quantity?: number;
   onQuantityChange?: (qty: number) => void;
   onRemove?: () => void;
@@ -41,7 +41,7 @@ function rarityColor(rarity?: string) {
 }
 
 export function CardItem({ card, mode = "search", quantity, onQuantityChange, onRemove, style, animateIn = true }: CardItemProps) {
-  const { addCard, getQuantity, updateQuantity } = usePortfolioContext();
+  const { addCard, getQuantity, updateQuantity, user } = usePortfolioContext();
   const searchQty = getQuantity(card.id);
 
   const totalValue = card.price != null && quantity != null ? card.price * quantity : null;
@@ -126,12 +126,12 @@ export function CardItem({ card, mode = "search", quantity, onQuantityChange, on
           />
         )}
 
-        {mode === "search" && (
+        {mode === "search" && user && (
           <SearchControls
             searchQty={searchQty}
-            onDecrement={() => updateQuantity(card.id, searchQty - 1)}
-            onIncrement={() => updateQuantity(card.id, searchQty + 1)}
-            onAdd={() => addCard(card.id)}
+            onDecrement={() => void updateQuantity(card.id, searchQty - 1)}
+            onIncrement={() => void updateQuantity(card.id, searchQty + 1)}
+            onAdd={() => void addCard(card.id)}
           />
         )}
       </div>

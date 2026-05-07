@@ -4,7 +4,7 @@ import { CardItem } from './CardItem';
 
 interface CardListProps {
   cards: NormalizedCard[];
-  mode?: "search" | "portfolio";
+  mode?: "search" | "portfolio" | "public";
   quantities?: Record<string, number>;
   onQuantityChange?: (cardId: string, qty: number) => void;
   onRemove?: (cardId: string) => void;
