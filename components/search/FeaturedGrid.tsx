@@ -32,11 +32,7 @@ export function FeaturedGrid({ slots, statuses, queries, visibleCount }: Feature
           50% { opacity: 1; }
         }
       `}</style>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-        gap: '1rem',
-      }}>
+      <div className="card-grid">
         {visibleIndexes.map((slotIndex) => {
           const card = slots[slotIndex];
 

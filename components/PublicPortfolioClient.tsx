@@ -90,7 +90,7 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
   }, [cardsMap, entries, query]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="portfolio-shell" style={{ gap: "1rem" }}>
       <div>
         <h1 style={{
           fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
@@ -106,11 +106,7 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
         </p>
       </div>
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "1rem",
-      }}>
+      <div className="portfolio-stats-grid">
         <StatCard label="Total Cards" value={String(totalCards)} />
         <StatCard label="Unique Cards" value={String(entries.length)} />
         <StatCard label="Portfolio Value" value={totalValue > 0 ? `~${totalValue.toFixed(2)}` : "—"} accent />
@@ -121,18 +117,7 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={`Search ${ownerName}'s portfolio`}
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "0.8rem 0.95rem",
-          background: "var(--bg-2)",
-          border: "1px solid var(--border)",
-          borderRadius: 10,
-          color: "var(--text)",
-          fontFamily: "var(--font-display)",
-          fontSize: "0.95rem",
-          outline: "none",
-        }}
+        className="portfolio-search-input"
       />
 
       <CardList

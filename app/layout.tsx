@@ -17,14 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PortfolioProvider>
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <Header />
-            <main style={{
-              flex: 1,
-              width: "100%",
-              maxWidth: 1200,
-              margin: "0 auto",
-              padding: "2rem 1rem",
-              boxSizing: "border-box",
-            }}>
+              <main className="app-main">
               {children}
             </main>
             <footer style={{

@@ -44,7 +44,7 @@ export function SearchClient() {
   const visibleResults = results.slice(0, visibleCount);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="portfolio-shell">
       <SearchInput query={query} isSearching={isSearching} onChange={setQuery} />
       {error && <SearchError error={error} />}
       <SearchResultCount count={results.length} />

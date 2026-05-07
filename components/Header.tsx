@@ -14,30 +14,49 @@ export function Header() {
   const pathname = usePathname();
   const { entries, user, logout, authLoading } = usePortfolioContext();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const totalCards = entries.reduce((sum, e) => sum + e.quantity, 0);
 
   useEffect(() => {
     setAccountMenuOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileMenuOpen]);
+
+  const isExploreActive = pathname === "/" || pathname === "/search";
+  const isSetsActive = pathname === "/sets" || pathname.startsWith("/sets/");
+  const isPortfolioActive = pathname === "/portfolio";
+  const isSettingsActive = pathname === "/settings";
+  const isPublicPortfolioActive = user?.publicSlug ? pathname === `/u/${user.publicSlug}` : false;
+
   return (
-    <header style={{
-      background: "var(--bg-2)",
-      borderBottom: "1px solid var(--border)",
-      position: "sticky",
-      top: 0,
-      zIndex: 50,
-    }}>
-      <div style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "0 1rem",
-        height: 60,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
+    <header className="cv-header">
+      <div className="cv-header-inner">
         {/* Logo */}
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <span style={{
@@ -58,158 +77,266 @@ export function Header() {
             borderRadius: 3,
             border: "1px solid var(--border)",
             letterSpacing: "0.1em",
-          }}>BETA</span>
+          }} className="cv-logo-beta">BETA</span>
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <div className="cv-header-right">
           {/* App nav */}
-          <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <NavLink href="/" active={pathname === "/" || pathname === "/search"} label="Explore" />
-            <NavLink href="/sets" active={pathname === "/sets" || pathname.startsWith("/sets/")} label="Sets" />
-            <NavLink href="/portfolio" active={pathname === "/portfolio"} label="Portfolio" count={totalCards} />
-          </nav>
+          <div className="cv-desktop-nav">
+            <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+              <NavLink href="/" active={isExploreActive} label="Explore" />
+              <NavLink href="/sets" active={isSetsActive} label="Sets" />
+              <NavLink href="/portfolio" active={isPortfolioActive} label="Portfolio" count={totalCards} />
+            </nav>
 
-          <div style={{ width: 1, height: 24, background: "var(--border)" }} />
+            <div style={{ width: 1, height: 24, background: "var(--border)" }} />
 
-          {/* Account nav */}
-          <nav style={{ display: "flex", alignItems: "center", gap: "0.35rem", position: "relative" }}>
-            {!authLoading && !user && (
-              <Link
-                href="/login"
-                style={{
-                  padding: "0.35rem 0.75rem",
-                  borderRadius: 6,
-                  border: "1px solid var(--accent)",
-                  background: "var(--accent)",
-                  color: "#fff",
-                  fontSize: "0.8rem",
-                  textDecoration: "none",
-                  fontWeight: 700,
-                  fontFamily: "var(--font-display)",
-                }}
-              >
-                Login
-              </Link>
-            )}
-
-            {!authLoading && user && (
-              <div style={{ position: "relative" }}>
-                <button
-                  type="button"
-                  onClick={() => setAccountMenuOpen((current) => !current)}
+            {/* Account nav */}
+            <nav style={{ display: "flex", alignItems: "center", gap: "0.35rem", position: "relative" }}>
+              {!authLoading && !user && (
+                <Link
+                  href="/login"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.45rem",
-                    padding: "0.35rem 0.65rem",
-                    borderRadius: 999,
-                    border: "1px solid var(--border)",
-                    background: "var(--bg-3)",
-                    color: "var(--text)",
-                    fontSize: "0.78rem",
-                    fontFamily: "var(--font-display)",
-                    cursor: "pointer",
-                  }}
-                  aria-expanded={accountMenuOpen}
-                >
-                  <span style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
+                    padding: "0.35rem 0.75rem",
+                    borderRadius: 6,
+                    border: "1px solid var(--accent)",
                     background: "var(--accent)",
                     color: "#fff",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "0.7rem",
-                    fontFamily: "var(--font-mono)",
-                    flexShrink: 0,
-                  }}>
-                    {(user.username ?? user.email).slice(0, 1).toUpperCase()}
-                  </span>
-                  <span style={{
-                    maxWidth: 92,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}>
-                    {user.username ?? user.email}
-                  </span>
-                  <span style={{ fontSize: "0.65rem", color: "var(--text-3)" }}>
-                    {accountMenuOpen ? "▲" : "▼"}
-                  </span>
-                </button>
+                    fontSize: "0.8rem",
+                    textDecoration: "none",
+                    fontWeight: 700,
+                    fontFamily: "var(--font-display)",
+                  }}
+                >
+                  Login
+                </Link>
+              )}
 
-                {accountMenuOpen && (
-                  <div style={{
-                    position: "absolute",
-                    top: "calc(100% + 0.45rem)",
-                    right: 0,
-                    minWidth: 200,
-                    background: "var(--bg-2)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    boxShadow: "0 12px 30px rgba(0, 0, 0, 0.18)",
-                    padding: "0.45rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.25rem",
-                    zIndex: 60,
-                  }}>
+              {!authLoading && user && (
+                <div style={{ position: "relative" }}>
+                  <button
+                    type="button"
+                    onClick={() => setAccountMenuOpen((current) => !current)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.45rem",
+                      padding: "0.35rem 0.65rem",
+                      borderRadius: 999,
+                      border: "1px solid var(--border)",
+                      background: "var(--bg-3)",
+                      color: "var(--text)",
+                      fontSize: "0.78rem",
+                      fontFamily: "var(--font-display)",
+                      cursor: "pointer",
+                    }}
+                    aria-expanded={accountMenuOpen}
+                  >
+                    <span style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: "var(--accent)",
+                      color: "#fff",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "0.7rem",
+                      fontFamily: "var(--font-mono)",
+                      flexShrink: 0,
+                    }}>
+                      {(user.username ?? user.email).slice(0, 1).toUpperCase()}
+                    </span>
+                    <span style={{
+                      maxWidth: 92,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {user.username ?? user.email}
+                    </span>
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-3)" }}>
+                      {accountMenuOpen ? "▲" : "▼"}
+                    </span>
+                  </button>
+
+                  {accountMenuOpen && (
                     <div style={{
-                      padding: "0.45rem 0.55rem 0.55rem",
-                      borderBottom: "1px solid var(--border)",
-                      marginBottom: "0.15rem",
+                      position: "absolute",
+                      top: "calc(100% + 0.45rem)",
+                      right: 0,
+                      minWidth: 200,
+                      background: "var(--bg-2)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 12,
+                      boxShadow: "0 12px 30px rgba(0, 0, 0, 0.18)",
+                      padding: "0.45rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.25rem",
+                      zIndex: 60,
                     }}>
                       <div style={{
-                        fontSize: "0.82rem",
-                        fontWeight: 700,
-                        color: "var(--text)",
-                        letterSpacing: "-0.02em",
+                        padding: "0.45rem 0.55rem 0.55rem",
+                        borderBottom: "1px solid var(--border)",
+                        marginBottom: "0.15rem",
                       }}>
-                        {user.username ?? "Account"}
+                        <div style={{
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          color: "var(--text)",
+                          letterSpacing: "-0.02em",
+                        }}>
+                          {user.username ?? "Account"}
+                        </div>
+                        <div style={{
+                          fontSize: "0.66rem",
+                          fontFamily: "var(--font-mono)",
+                          color: "var(--text-3)",
+                          marginTop: "0.1rem",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}>
+                          {user.email}
+                        </div>
                       </div>
-                      <div style={{
-                        fontSize: "0.66rem",
-                        fontFamily: "var(--font-mono)",
-                        color: "var(--text-3)",
-                        marginTop: "0.1rem",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}>
-                        {user.email}
-                      </div>
-                    </div>
 
-                    <MenuLink href="/settings" label="Settings" />
-                    {user.publicSlug && <MenuLink href={`/u/${user.publicSlug}`} label="Public Portfolio" />}
-                    <button
-                      type="button"
-                      onClick={() => void logout()}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        padding: "0.55rem 0.65rem",
-                        borderRadius: 8,
-                        border: "1px solid transparent",
-                        background: "transparent",
-                        color: "var(--text-2)",
-                        fontSize: "0.8rem",
-                        fontFamily: "var(--font-display)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </nav>
+                      <MenuLink href="/settings" label="Settings" />
+                      {user.publicSlug && <MenuLink href={`/u/${user.publicSlug}`} label="Public Portfolio" />}
+                      <button
+                        type="button"
+                        onClick={() => void logout()}
+                        style={{
+                          width: "100%",
+                          textAlign: "left",
+                          padding: "0.55rem 0.65rem",
+                          borderRadius: 8,
+                          border: "1px solid transparent",
+                          background: "transparent",
+                          color: "var(--text-2)",
+                          fontSize: "0.8rem",
+                          fontFamily: "var(--font-display)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </nav>
+          </div>
+
+          <button
+            type="button"
+            className="cv-mobile-menu-button"
+            onClick={() => setMobileMenuOpen((current) => !current)}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            <span className={`cv-burger ${mobileMenuOpen ? "is-open" : ""}`} aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div
+          className="cv-mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setMobileMenuOpen(false);
+            }
+          }}
+        >
+          <div className="cv-mobile-menu-content">
+            <div className="cv-mobile-menu-head">
+              <button
+                type="button"
+                className="cv-mobile-overlay-close"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close navigation"
+              >
+                <span aria-hidden>✕</span>
+              </button>
+            </div>
+
+            <nav className="cv-mobile-links">
+              <MobileMenuLink href="/" label="Explore" active={isExploreActive} onNavigate={() => setMobileMenuOpen(false)} />
+              <MobileMenuLink href="/sets" label="Sets" active={isSetsActive} onNavigate={() => setMobileMenuOpen(false)} />
+              <MobileMenuLink href="/portfolio" label={`Portfolio`} active={isPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />
+            </nav>
+
+            <section className="cv-mobile-account-section" aria-label="Account">
+              {!authLoading && !user && (
+                <nav className="cv-mobile-account-links">
+                  <MobileMenuLink href="/login" label="Login" compact active={pathname === "/login"} onNavigate={() => setMobileMenuOpen(false)} />
+                  <MobileMenuLink href="/register" label="Register" compact active={pathname === "/register"} onNavigate={() => setMobileMenuOpen(false)} />
+                </nav>
+              )}
+
+              {!authLoading && user && (
+                <div className="cv-mobile-account-block">
+                  <div className="cv-mobile-account-meta">
+                    <div className="cv-mobile-account-user">{user.username ?? "Account"}</div>
+                    <div className="cv-mobile-account-email">{user.email}</div>
+                  </div>
+
+                  <nav className="cv-mobile-account-links">
+                    <MobileMenuLink href="/settings" label="Settings" compact active={isSettingsActive} onNavigate={() => setMobileMenuOpen(false)} />
+                    {user.publicSlug && <MobileMenuLink href={`/u/${user.publicSlug}`} label="Public" compact active={isPublicPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />}
+                  </nav>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="cv-mobile-logout"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
     </header>
+  );
+}
+
+function MobileMenuLink({
+  href,
+  label,
+  active,
+  compact,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  active?: boolean;
+  compact?: boolean;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={`cv-mobile-link${active ? " is-active" : ""}${compact ? " is-compact" : ""}`}
+      aria-current={active ? "page" : undefined}
+    >
+      {label}
+    </Link>
   );
 }
 

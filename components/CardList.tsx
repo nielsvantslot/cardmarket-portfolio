@@ -38,11 +38,7 @@ export function CardList({
   }
 
   return (
-    <div style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-      gap: "1rem",
-    }}>
+    <div className="card-grid">
       {cards.map((card, i) => (
         <CardItem
           key={card.id}

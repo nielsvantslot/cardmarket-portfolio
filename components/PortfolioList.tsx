@@ -209,13 +209,9 @@ export function PortfolioList() {
   }, [entries.length, hydrated, submitSnapshot, totalCards, totalValue, uniqueCards]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="portfolio-shell">
       {/* Stats row */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-        gap: "1rem",
-      }}>
+      <div className="portfolio-stats-grid">
         <StatCard label="Total Cards" value={String(totalCards)} />
         <StatCard label="Unique Cards" value={String(uniqueCards)} />
         <StatCard
@@ -249,18 +245,7 @@ export function PortfolioList() {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Search your portfolio"
-        style={{
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "0.8rem 0.95rem",
-          background: "var(--bg-2)",
-          border: "1px solid var(--border)",
-          borderRadius: 10,
-          color: "var(--text)",
-          fontFamily: "var(--font-display)",
-          fontSize: "0.95rem",
-          outline: "none",
-        }}
+        className="portfolio-search-input"
       />
 
       {/* Card grid */}
