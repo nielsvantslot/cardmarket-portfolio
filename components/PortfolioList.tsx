@@ -53,12 +53,31 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
+const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+const ONE_HOUR_MS = 1000 * 60 * 60;
+
 export function PortfolioList() {
-  const { entries, hydrated, removeCard, updateQuantity, submitSnapshot } = usePortfolioContext();
+  const {
+    entries,
+    hydrated,
+    removeCard,
+    updateQuantity,
+    submitSnapshot,
+    portfolioMutationVersion,
+  } = usePortfolioContext();
   const [cards, setCards] = useState<Map<string, NormalizedCard>>(new Map());
   const [history, setHistory] = useState<PortfolioSnapshotPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
+  const [dayBucket, setDayBucket] = useState(() => Math.floor(Date.now() / ONE_DAY_MS));
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setDayBucket(Math.floor(Date.now() / ONE_DAY_MS));
+    }, ONE_HOUR_MS);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -163,6 +182,8 @@ export function PortfolioList() {
     }
   });
 
+  const allCardsLoaded = entries.length === 0 || entries.every((entry) => cards.has(entry.cardId));
+
   const normalizedCards = useMemo(() => {
     const filtered = entries
       .map((entry) => ({
@@ -199,14 +220,35 @@ export function PortfolioList() {
   }, [cards, entries, query]);
 
   useEffect(() => {
-    if (!hydrated || entries.length === 0) return;
+    if (!hydrated || entries.length === 0 || portfolioMutationVersion === 0 || !allCardsLoaded) return;
 
     void submitSnapshot({
       totalValue,
       totalCards,
       uniqueCards,
+      reason: "portfolio-change",
     });
-  }, [entries.length, hydrated, submitSnapshot, totalCards, totalValue, uniqueCards]);
+  }, [
+    allCardsLoaded,
+    entries.length,
+    hydrated,
+    portfolioMutationVersion,
+    submitSnapshot,
+    totalCards,
+    totalValue,
+    uniqueCards,
+  ]);
+
+  useEffect(() => {
+    if (!hydrated || entries.length === 0 || !allCardsLoaded) return;
+
+    void submitSnapshot({
+      totalValue,
+      totalCards,
+      uniqueCards,
+      reason: "daily",
+    });
+  }, [allCardsLoaded, dayBucket, entries.length, hydrated, submitSnapshot, totalCards, totalValue, uniqueCards]);
 
   return (
     <div className="portfolio-shell">

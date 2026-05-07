@@ -34,6 +34,7 @@ export function usePortfolio() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sealedItems, setSealedItems] = useState<SealedProduct[]>([]);
+  const [portfolioMutationVersion, setPortfolioMutationVersion] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -79,6 +80,7 @@ export function usePortfolio() {
         entry.cardId === cardId ? { ...entry, quantity: entry.quantity + 1 } : entry
       );
     });
+    setPortfolioMutationVersion((prev) => prev + 1);
   }, []);
 
   const removeCard = useCallback(async (cardId: string) => {
@@ -87,6 +89,7 @@ export function usePortfolio() {
     });
 
     setEntries((prev) => prev.filter((entry) => entry.cardId !== cardId));
+    setPortfolioMutationVersion((prev) => prev + 1);
   }, []);
 
   const updateQuantity = useCallback(async (cardId: string, quantity: number) => {
@@ -108,6 +111,7 @@ export function usePortfolio() {
         entry.cardId === cardId ? { ...entry, quantity } : entry
       );
     });
+    setPortfolioMutationVersion((prev) => prev + 1);
   }, []);
 
   const logout = useCallback(async () => {
@@ -159,6 +163,7 @@ export function usePortfolio() {
     totalValue: number;
     totalCards: number;
     uniqueCards: number;
+    reason?: "daily" | "portfolio-change";
   }) => {
     await fetchJson<{ ok?: boolean; skipped?: boolean }>("/api/portfolio/snapshot", {
       method: "POST",
@@ -180,6 +185,7 @@ export function usePortfolio() {
     updateQuantity,
     hasCard,
     getQuantity,
+    portfolioMutationVersion,
     addSealedItem,
     removeSealedItem,
     updateSealedItem,

@@ -22,6 +22,41 @@ export async function GET() {
       }),
     ]);
 
+    let latestSnapshotRows: Array<{
+      totalValue: number;
+      totalCards: number;
+      uniqueCards: number;
+      createdAt: Date;
+    }> = [];
+
+    try {
+      latestSnapshotRows = await prisma.$queryRaw<Array<{
+        totalValue: number;
+        totalCards: number;
+        uniqueCards: number;
+        createdAt: Date;
+      }>>`
+        SELECT "totalValue", "totalCards", "uniqueCards", "createdAt"
+        FROM "UserLatestPortfolioSnapshot"
+        WHERE "userId" = ${user.id}
+        LIMIT 1
+      `;
+    } catch {
+      latestSnapshotRows = await prisma.portfolioSnapshot.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          totalValue: true,
+          totalCards: true,
+          uniqueCards: true,
+          createdAt: true,
+        },
+      });
+    }
+
+    const latestSnapshot = latestSnapshotRows[0];
+
     return NextResponse.json({
       entries: entries.map((entry) => ({
         cardId: entry.cardId,
@@ -41,6 +76,14 @@ export async function GET() {
         imageUrl: item.imageUrl ?? undefined,
         addedAt: item.createdAt.getTime(),
       })),
+      latestSnapshot: latestSnapshot
+        ? {
+            totalValue: latestSnapshot.totalValue,
+            totalCards: latestSnapshot.totalCards,
+            uniqueCards: latestSnapshot.uniqueCards,
+            createdAt: latestSnapshot.createdAt.toISOString(),
+          }
+        : null,
     });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

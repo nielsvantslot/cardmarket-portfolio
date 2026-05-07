@@ -7,14 +7,18 @@ interface SnapshotBody {
   totalValue?: number;
   totalCards?: number;
   uniqueCards?: number;
+  reason?: "daily" | "portfolio-change";
 }
 
-const SNAPSHOT_COOLDOWN_MS = 1000 * 60 * 60 * 6;
+const DAILY_SNAPSHOT_COOLDOWN_MS = 1000 * 60 * 60 * 24;
+const MUTATION_DUPLICATE_WINDOW_MS = 1000 * 60;
+const VALUE_EPSILON = 0.0001;
 
 export async function POST(request: Request) {
   try {
     const user = await requireSessionUser();
     const body = (await request.json()) as SnapshotBody;
+    const reason = body.reason === "portfolio-change" ? "portfolio-change" : "daily";
 
     const totalValue = Number(body.totalValue ?? 0);
     const totalCards = Math.max(0, Math.trunc(body.totalCards ?? 0));
@@ -27,10 +31,30 @@ export async function POST(request: Request) {
     const latest = await prisma.portfolioSnapshot.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      select: { createdAt: true },
+      select: {
+        createdAt: true,
+        totalValue: true,
+        totalCards: true,
+        uniqueCards: true,
+      },
     });
 
-    if (latest && Date.now() - latest.createdAt.getTime() < SNAPSHOT_COOLDOWN_MS) {
+    if (
+      reason === "daily"
+      && latest
+      && Date.now() - latest.createdAt.getTime() < DAILY_SNAPSHOT_COOLDOWN_MS
+    ) {
+      return NextResponse.json({ skipped: true });
+    }
+
+    if (
+      reason === "portfolio-change"
+      && latest
+      && Date.now() - latest.createdAt.getTime() < MUTATION_DUPLICATE_WINDOW_MS
+      && Math.abs(latest.totalValue - totalValue) < VALUE_EPSILON
+      && latest.totalCards === totalCards
+      && latest.uniqueCards === uniqueCards
+    ) {
       return NextResponse.json({ skipped: true });
     }
 
