@@ -3,9 +3,9 @@ import type {
   PortfolioEntry,
   PortfolioSnapshotPoint,
   SealedProduct,
-} from "@/lib/types";
+} from '@/lib/types';
 
-import { requestJson } from "./httpClient";
+import { requestJson } from './httpClient';
 
 interface PortfolioResponse {
   entries: PortfolioEntry[];

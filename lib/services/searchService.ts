@@ -1,9 +1,9 @@
 import type {
   NormalizedCard,
   SetBrief,
-} from "@/lib/types";
+} from '@/lib/types';
 
-import { requestJson } from "./httpClient";
+import { requestJson } from './httpClient';
 
 export type SearchSet = Pick<SetBrief, "id" | "name" | "cardCount" | "logo" | "symbol" | "releaseDate">;
 

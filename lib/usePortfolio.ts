@@ -10,7 +10,6 @@ import {
   portfolioService,
   type PortfolioService,
 } from './services/portfolioService';
-
 import type {
   AuthUser,
   PortfolioEntry,
