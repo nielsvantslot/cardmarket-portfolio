@@ -1,6 +1,7 @@
 "use client";
 
 import { CardItem } from '@/components/CardItem';
+import { useAuth } from '@/lib/authContext';
 import type { NormalizedCard } from '@/lib/types';
 
 import type { SlotStatus } from './types';
@@ -13,6 +14,7 @@ interface FeaturedGridProps {
 }
 
 export function FeaturedGrid({ slots, statuses, queries, visibleCount }: FeaturedGridProps) {
+  const { user } = useAuth();
   const visibleIndexes: number[] = [];
 
   for (let i = 0; i < queries.length && visibleIndexes.length < visibleCount; i++) {
@@ -47,14 +49,14 @@ export function FeaturedGrid({ slots, statuses, queries, visibleCount }: Feature
             );
           }
 
-          return <FeaturedSkeletonCard key={queries[slotIndex]} />;
+          return <FeaturedSkeletonCard key={queries[slotIndex]} isAuthenticated={!!user} />;
         })}
       </div>
     </>
   );
 }
 
-function FeaturedSkeletonCard() {
+function FeaturedSkeletonCard({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <div
       style={{
@@ -91,7 +93,7 @@ function FeaturedSkeletonCard() {
         <SkeletonBar height="0.68rem" width="65%" />
         <SkeletonBar height="0.62rem" width="50%" />
         <div style={{ flex: 1 }} />
-        <SkeletonBar height={30} width="100%" />
+        {isAuthenticated && <SkeletonBar height={30} width="100%" />}
       </div>
     </div>
   );
