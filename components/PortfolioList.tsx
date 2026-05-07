@@ -203,10 +203,43 @@ export function PortfolioList() {
 
   if (!hydrated) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="skeleton" style={{ aspectRatio: "2.5/3.5", borderRadius: 12 }} />
-        ))}
+      <div className="portfolio-shell">
+        <div className="portfolio-stats-grid">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`stat-${i}`}
+              style={{
+                background: "var(--bg-2)",
+                border: "1px solid var(--border)",
+                borderRadius: 10,
+                padding: "1.25rem 1.5rem",
+              }}
+            >
+              <div className="skeleton" style={{ height: 10, width: "42%", borderRadius: 4, marginBottom: "0.7rem" }} />
+              <div className="skeleton" style={{ height: 30, width: "68%", borderRadius: 6 }} />
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+            background: "var(--bg-2)",
+            padding: "0.8rem 0.6rem 0.25rem",
+          }}
+        >
+          <div className="skeleton" style={{ height: 10, width: 170, borderRadius: 4, margin: "0.1rem 0.35rem 0.7rem" }} />
+          <div className="skeleton" style={{ height: 220, borderRadius: 10, margin: "0 0.25rem" }} />
+        </div>
+
+        <div className="skeleton" style={{ height: 44, borderRadius: 10 }} />
+
+        <div className="card-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={`card-${i}`} className="skeleton" style={{ aspectRatio: "2.5/3.5", borderRadius: 12 }} />
+          ))}
+        </div>
       </div>
     );
   }
