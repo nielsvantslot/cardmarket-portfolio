@@ -6,23 +6,22 @@ import {
   useState,
 } from 'react';
 
+import { useAuth } from './authContext';
 import {
   portfolioService,
   type PortfolioService,
 } from './services/portfolioService';
 import type {
-  AuthUser,
   PortfolioEntry,
   SealedProduct,
 } from './types';
 
 export function usePortfolio(service: PortfolioService = portfolioService) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const { user } = useAuth();
   const [entries, setEntries] = useState<PortfolioEntry[]>([]);
   const [sealedItems, setSealedItems] = useState<SealedProduct[]>([]);
   const [portfolioMutationVersion, setPortfolioMutationVersion] = useState(0);
   const [hydrated, setHydrated] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
 
   const loadPortfolio = useCallback(async () => {
     const data = await service.getPortfolio();
@@ -30,25 +29,16 @@ export function usePortfolio(service: PortfolioService = portfolioService) {
     setSealedItems(data.sealedItems ?? []);
   }, [service]);
 
-  const refresh = useCallback(async () => {
-    setAuthLoading(true);
-    try {
-      const session = await service.getSession();
-      setUser(session.user);
-      await loadPortfolio();
-    } catch {
-      setUser(null);
+  // Load portfolio data once the user is confirmed, reset when logged out
+  useEffect(() => {
+    if (user) {
+      void loadPortfolio().finally(() => setHydrated(true));
+    } else {
       setEntries([]);
       setSealedItems([]);
-    } finally {
-      setAuthLoading(false);
-      setHydrated(true);
+      setHydrated(false);
     }
-  }, [loadPortfolio]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  }, [user, loadPortfolio]);
 
   const addCard = useCallback(async (cardId: string) => {
     await service.addCard(cardId);
@@ -90,13 +80,6 @@ export function usePortfolio(service: PortfolioService = portfolioService) {
     setPortfolioMutationVersion((prev) => prev + 1);
   }, [service]);
 
-  const logout = useCallback(async () => {
-    await service.logout();
-    setUser(null);
-    setEntries([]);
-    setSealedItems([]);
-  }, [service]);
-
   const hasCard = useCallback(
     (cardId: string) => entries.some((entry) => entry.cardId === cardId),
     [entries]
@@ -135,10 +118,6 @@ export function usePortfolio(service: PortfolioService = portfolioService) {
   }, [service]);
 
   return {
-    user,
-    authLoading,
-    refresh,
-    logout,
     entries,
     sealedItems,
     hydrated,

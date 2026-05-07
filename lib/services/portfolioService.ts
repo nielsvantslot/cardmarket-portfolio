@@ -1,5 +1,4 @@
 import type {
-  AuthUser,
   PortfolioEntry,
   PortfolioSnapshotPoint,
   SealedProduct,
@@ -12,10 +11,6 @@ interface PortfolioResponse {
   sealedItems: SealedProduct[];
 }
 
-interface SessionResponse {
-  user: AuthUser | null;
-}
-
 export interface SnapshotInput {
   totalValue: number;
   totalCards: number;
@@ -24,12 +19,10 @@ export interface SnapshotInput {
 }
 
 export interface PortfolioService {
-  getSession(): Promise<SessionResponse>;
   getPortfolio(): Promise<PortfolioResponse>;
   addCard(cardId: string): Promise<{ entry: PortfolioEntry }>;
   removeCard(cardId: string): Promise<{ removed: true }>;
   updateCardQuantity(cardId: string, quantity: number): Promise<{ entry?: PortfolioEntry }>;
-  logout(): Promise<{ ok: true }>;
   addSealedItem(item: Omit<SealedProduct, "id" | "addedAt">): Promise<{ item: SealedProduct }>;
   removeSealedItem(id: string): Promise<{ removed: true }>;
   updateSealedItem(id: string, patch: Partial<SealedProduct>): Promise<{ item: SealedProduct }>;
@@ -38,10 +31,6 @@ export interface PortfolioService {
 }
 
 export const portfolioService: PortfolioService = {
-  async getSession() {
-    return requestJson<SessionResponse>("/api/auth/session");
-  },
-
   async getPortfolio() {
     return requestJson<PortfolioResponse>("/api/portfolio");
   },
@@ -66,10 +55,6 @@ export const portfolioService: PortfolioService = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cardId, quantity }),
     });
-  },
-
-  async logout() {
-    return requestJson<{ ok: true }>("/api/auth/logout", { method: "POST" });
   },
 
   async addSealedItem(item: Omit<SealedProduct, "id" | "addedAt">) {

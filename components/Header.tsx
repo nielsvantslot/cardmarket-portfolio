@@ -8,11 +8,13 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useAuth } from '@/lib/authContext';
 import { usePortfolioContext } from '@/lib/portfolioContext';
 
 export function Header() {
   const pathname = usePathname();
-  const { entries, user, logout, authLoading } = usePortfolioContext();
+  const { entries } = usePortfolioContext();
+  const { user, logout, authLoading } = useAuth();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -86,7 +88,7 @@ export function Header() {
             <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
               <NavLink href="/" active={isExploreActive} label="Explore" />
               <NavLink href="/sets" active={isSetsActive} label="Sets" />
-              <NavLink href="/portfolio" active={isPortfolioActive} label="Portfolio" count={totalCards} />
+              <NavLink href="/portfolio" active={isPortfolioActive} label="Portfolio" />
             </nav>
 
             <div style={{ width: 1, height: 24, background: "var(--border)" }} />

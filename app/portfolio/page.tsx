@@ -3,10 +3,10 @@
 import Link from 'next/link';
 
 import { PortfolioList } from '@/components/PortfolioList';
-import { usePortfolioContext } from '@/lib/portfolioContext';
+import { useAuth } from '@/lib/authContext';
 
 export default function PortfolioPage() {
-  const { user, authLoading } = usePortfolioContext();
+  const { user, authLoading } = useAuth();
 
   if (authLoading) {
     return <div style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)" }}>Loading account...</div>;

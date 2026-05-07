@@ -7,7 +7,7 @@ import {
 
 import { useRouter } from 'next/navigation';
 
-import { usePortfolioContext } from '@/lib/portfolioContext';
+import { useAuth } from '@/lib/authContext';
 import { accountService } from '@/lib/services/accountService';
 import type { AuthUser } from '@/lib/types';
 
@@ -29,7 +29,7 @@ function normalizeSlug(value: string): string {
 
 export function ProfileEditor({ mode, initialUser, title, description }: ProfileEditorProps) {
   const router = useRouter();
-  const { refresh } = usePortfolioContext();
+  const { refreshAuth } = useAuth();
 
   const [name, setName] = useState(initialUser.name ?? "");
   const [username, setUsername] = useState(initialUser.username ?? "");
@@ -55,7 +55,7 @@ export function ProfileEditor({ mode, initialUser, title, description }: Profile
     try {
       await accountService.updateProfile({ name, username, publicSlug, bio });
 
-      await refresh();
+      await refreshAuth();
       setSaved(true);
 
       if (mode === "onboarding") {

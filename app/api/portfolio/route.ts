@@ -4,10 +4,15 @@ import { requireSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
+  let user;
   try {
-    const user = await requireSessionUser();
+    user = await requireSessionUser();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const [entries, sealedItems] = await Promise.all([
+  try {
+    const [entries, sealedItems, latestSnapshotRows] = await Promise.all([
       prisma.portfolioCard.findMany({
         where: { userId: user.id },
         select: {
@@ -20,29 +25,7 @@ export async function GET() {
         where: { userId: user.id },
         orderBy: { createdAt: "desc" },
       }),
-    ]);
-
-    let latestSnapshotRows: Array<{
-      totalValue: number;
-      totalCards: number;
-      uniqueCards: number;
-      createdAt: Date;
-    }> = [];
-
-    try {
-      latestSnapshotRows = await prisma.$queryRaw<Array<{
-        totalValue: number;
-        totalCards: number;
-        uniqueCards: number;
-        createdAt: Date;
-      }>>`
-        SELECT "totalValue", "totalCards", "uniqueCards", "createdAt"
-        FROM "UserLatestPortfolioSnapshot"
-        WHERE "userId" = ${user.id}
-        LIMIT 1
-      `;
-    } catch {
-      latestSnapshotRows = await prisma.portfolioSnapshot.findMany({
+      prisma.portfolioSnapshot.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -52,8 +35,8 @@ export async function GET() {
           uniqueCards: true,
           createdAt: true,
         },
-      });
-    }
+      }),
+    ]);
 
     const latestSnapshot = latestSnapshotRows[0];
 
@@ -85,7 +68,8 @@ export async function GET() {
           }
         : null,
     });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } catch (err) {
+    console.error("[GET /api/portfolio]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

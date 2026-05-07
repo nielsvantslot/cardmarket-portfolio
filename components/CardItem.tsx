@@ -5,6 +5,7 @@ import {
   PortfolioControls,
   SearchControls,
 } from '@/components/CardItemParts';
+import { useAuth } from '@/lib/authContext';
 import { usePortfolioContext } from '@/lib/portfolioContext';
 import type { NormalizedCard } from '@/lib/types';
 
@@ -41,7 +42,8 @@ function rarityColor(rarity?: string) {
 }
 
 export function CardItem({ card, mode = "search", quantity, onQuantityChange, onRemove, style, animateIn = true }: CardItemProps) {
-  const { addCard, getQuantity, updateQuantity, user } = usePortfolioContext();
+  const { addCard, getQuantity, updateQuantity } = usePortfolioContext();
+  const { user } = useAuth();
   const searchQty = getQuantity(card.id);
 
   const totalValue = card.price != null && quantity != null ? card.price * quantity : null;

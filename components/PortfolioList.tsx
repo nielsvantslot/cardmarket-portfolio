@@ -116,55 +116,6 @@ export function PortfolioList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries, hydrated]);
 
-  if (!hydrated) {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="skeleton" style={{ aspectRatio: "2.5/3.5", borderRadius: 12 }} />
-        ))}
-      </div>
-    );
-  }
-
-  if (entries.length === 0) {
-    return (
-      <div style={{
-        textAlign: "center",
-        padding: "5rem 2rem",
-        border: "1px dashed var(--border)",
-        borderRadius: 16,
-      }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🃏</div>
-        <div style={{
-          fontWeight: 700,
-          fontSize: "1.1rem",
-          color: "var(--text)",
-          marginBottom: "0.5rem",
-        }}>
-          Your portfolio is empty
-        </div>
-        <div style={{ color: "var(--text-3)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
-          Search for cards and add them to start tracking your collection
-        </div>
-        <Link
-          href="/search"
-          style={{
-            display: "inline-block",
-            padding: "0.6rem 1.25rem",
-            background: "var(--accent)",
-            color: "#fff",
-            borderRadius: 8,
-            textDecoration: "none",
-            fontWeight: 600,
-            fontSize: "0.9rem",
-          }}
-        >
-          Search Cards
-        </Link>
-      </div>
-    );
-  }
-
   // Compute stats
   const quantities: Record<string, number> = {};
   entries.forEach((e) => { quantities[e.cardId] = e.quantity; });
@@ -249,6 +200,55 @@ export function PortfolioList() {
       reason: "daily",
     });
   }, [allCardsLoaded, dayBucket, entries.length, hydrated, submitSnapshot, totalCards, totalValue, uniqueCards]);
+
+  if (!hydrated) {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "1rem" }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="skeleton" style={{ aspectRatio: "2.5/3.5", borderRadius: 12 }} />
+        ))}
+      </div>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <div style={{
+        textAlign: "center",
+        padding: "5rem 2rem",
+        border: "1px dashed var(--border)",
+        borderRadius: 16,
+      }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🃏</div>
+        <div style={{
+          fontWeight: 700,
+          fontSize: "1.1rem",
+          color: "var(--text)",
+          marginBottom: "0.5rem",
+        }}>
+          Your portfolio is empty
+        </div>
+        <div style={{ color: "var(--text-3)", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+          Search for cards and add them to start tracking your collection
+        </div>
+        <Link
+          href="/search"
+          style={{
+            display: "inline-block",
+            padding: "0.6rem 1.25rem",
+            background: "var(--accent)",
+            color: "#fff",
+            borderRadius: 8,
+            textDecoration: "none",
+            fontWeight: 600,
+            fontSize: "0.9rem",
+          }}
+        >
+          Search Cards
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="portfolio-shell">

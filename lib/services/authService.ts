@@ -6,9 +6,15 @@ interface AuthResponse {
   user: AuthUser & { username?: string | null; publicSlug?: string | null };
 }
 
+interface SessionResponse {
+  user: AuthUser | null;
+}
+
 export interface AuthService {
   login(email: string, password: string): Promise<AuthResponse>;
   register(email: string, password: string): Promise<AuthResponse>;
+  getSession(): Promise<SessionResponse>;
+  logout(): Promise<{ ok: true }>;
 }
 
 export const authService: AuthService = {
@@ -26,5 +32,13 @@ export const authService: AuthService = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+  },
+
+  async getSession() {
+    return requestJson<SessionResponse>("/api/auth/session");
+  },
+
+  async logout() {
+    return requestJson<{ ok: true }>("/api/auth/logout", { method: "POST" });
   },
 };

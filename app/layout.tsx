@@ -3,6 +3,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 import { Header } from '@/components/Header';
+import { getSessionUser } from '@/lib/auth';
+import { AuthProvider } from '@/lib/authContext';
 import { PortfolioProvider } from '@/lib/portfolioContext';
 
 export const metadata: Metadata = {
@@ -10,10 +12,13 @@ export const metadata: Metadata = {
   description: "Track your trading card collection and portfolio value",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const initialUser = await getSessionUser();
+
   return (
     <html lang="en">
       <body>
+        <AuthProvider initialUser={initialUser}>
         <PortfolioProvider>
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <Header />
@@ -31,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </footer>
           </div>
         </PortfolioProvider>
+        </AuthProvider>
       </body>
     </html>
   );
