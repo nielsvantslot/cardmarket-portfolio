@@ -8,6 +8,9 @@ import {
 
 import Link from 'next/link';
 
+import { CardList } from '@/components/CardList';
+import { PortfolioHistoryChart } from '@/components/PortfolioHistoryChart';
+import { StatCard } from '@/components/ui/StatCard';
 import {
   getCards,
   normalizeCard,
@@ -18,41 +21,6 @@ import type {
   NormalizedCard,
   PortfolioSnapshotPoint,
 } from '@/lib/types';
-
-import { CardList } from './CardList';
-import { PortfolioHistoryChart } from './PortfolioHistoryChart';
-
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div style={{
-      background: "var(--bg-2)",
-      border: "1px solid var(--border)",
-      borderRadius: 10,
-      padding: "1.25rem 1.5rem",
-    }}>
-      <div style={{
-        fontSize: "0.7rem",
-        color: "var(--text-3)",
-        fontFamily: "var(--font-mono)",
-        letterSpacing: "0.1em",
-        textTransform: "uppercase",
-        marginBottom: "0.4rem",
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: "1.75rem",
-        fontWeight: 800,
-        fontFamily: "var(--font-display)",
-        letterSpacing: "-0.04em",
-        color: accent ? "var(--green)" : "var(--text)",
-        lineHeight: 1,
-      }}>
-        {value}
-      </div>
-    </div>
-  );
-}
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 const ONE_HOUR_MS = 1000 * 60 * 60;

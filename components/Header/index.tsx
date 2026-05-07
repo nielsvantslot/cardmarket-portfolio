@@ -11,20 +11,20 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { usePortfolioContext } from '@/lib/portfolioContext';
 
+import styles from './Header.module.css';
+
 export function Header() {
   const pathname = usePathname();
-  const { entries } = usePortfolioContext();
   const { user, logout, authLoading } = useAuth();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const { entries } = usePortfolioContext();
   const totalCards = entries.reduce((sum, e) => sum + e.quantity, 0);
 
   useEffect(() => {
     setAccountMenuOpen(false);
     setMobileMenuOpen(false);
   }, [pathname]);
-
   useEffect(() => {
     if (!mobileMenuOpen) {
       document.body.style.overflow = "";
@@ -38,11 +38,10 @@ export function Header() {
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setMobileMenuOpen(false);
+        setAccountMenuOpen(false);
       }
     };
 
@@ -57,8 +56,8 @@ export function Header() {
   const isPublicPortfolioActive = user?.publicSlug ? pathname === `/u/${user.publicSlug}` : false;
 
   return (
-    <header className="cv-header">
-      <div className="cv-header-inner">
+    <header className={styles.header}>
+      <div className={styles.inner}>
         {/* Logo */}
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <span style={{
@@ -79,12 +78,12 @@ export function Header() {
             borderRadius: 3,
             border: "1px solid var(--border)",
             letterSpacing: "0.1em",
-          }} className="cv-logo-beta">BETA</span>
+          }} className={styles.logoBeta}>BETA</span>
         </Link>
 
-        <div className="cv-header-right">
+        <div className={styles.right}>
           {/* App nav */}
-          <div className="cv-desktop-nav">
+          <div className={styles.desktopNav}>
             <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
               <NavLink href="/" active={isExploreActive} label="Explore" />
               <NavLink href="/sets" active={isSetsActive} label="Sets" />
@@ -233,12 +232,12 @@ export function Header() {
 
           <button
             type="button"
-            className="cv-mobile-menu-button"
+            className={styles.mobileMenuButton}
             onClick={() => setMobileMenuOpen((current) => !current)}
             aria-expanded={mobileMenuOpen}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            <span className={`cv-burger ${mobileMenuOpen ? "is-open" : ""}`} aria-hidden>
+            <span className={`${styles.burger} ${mobileMenuOpen ? styles.isOpen : ""}`} aria-hidden>
               <span />
               <span />
               <span />
@@ -249,7 +248,7 @@ export function Header() {
 
       {mobileMenuOpen && (
         <div
-          className="cv-mobile-menu"
+          className={styles.mobileMenu}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
@@ -259,11 +258,11 @@ export function Header() {
             }
           }}
         >
-          <div className="cv-mobile-menu-content">
-            <div className="cv-mobile-menu-head">
+          <div className={styles.mobileMenuContent}>
+            <div className={styles.mobileMenuHead}>
               <button
                 type="button"
-                className="cv-mobile-overlay-close"
+                className={styles.overlayClose}
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close navigation"
               >
@@ -271,28 +270,28 @@ export function Header() {
               </button>
             </div>
 
-            <nav className="cv-mobile-links">
+            <nav className={styles.mobileLinks}>
               <MobileMenuLink href="/" label="Explore" active={isExploreActive} onNavigate={() => setMobileMenuOpen(false)} />
               <MobileMenuLink href="/sets" label="Sets" active={isSetsActive} onNavigate={() => setMobileMenuOpen(false)} />
               <MobileMenuLink href="/portfolio" label={`Portfolio`} active={isPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />
             </nav>
 
-            <section className="cv-mobile-account-section" aria-label="Account">
+            <section className={styles.mobileAccountSection} aria-label="Account">
               {!authLoading && !user && (
-                <nav className="cv-mobile-account-links">
+              <nav className={styles.mobileAccountLinks}>
                   <MobileMenuLink href="/login" label="Login" compact active={pathname === "/login"} onNavigate={() => setMobileMenuOpen(false)} />
                   <MobileMenuLink href="/register" label="Register" compact active={pathname === "/register"} onNavigate={() => setMobileMenuOpen(false)} />
                 </nav>
               )}
 
               {!authLoading && user && (
-                <div className="cv-mobile-account-block">
-                  <div className="cv-mobile-account-meta">
-                    <div className="cv-mobile-account-user">{user.username ?? "Account"}</div>
-                    <div className="cv-mobile-account-email">{user.email}</div>
+                <div className={styles.mobileAccountBlock}>
+                  <div className={styles.mobileAccountMeta}>
+                    <div className={styles.mobileAccountUser}>{user.username ?? "Account"}</div>
+                    <div className={styles.mobileAccountEmail}>{user.email}</div>
                   </div>
 
-                  <nav className="cv-mobile-account-links">
+                  <nav className={styles.mobileAccountLinks}>
                     <MobileMenuLink href="/settings" label="Settings" compact active={isSettingsActive} onNavigate={() => setMobileMenuOpen(false)} />
                     {user.publicSlug && <MobileMenuLink href={`/u/${user.publicSlug}`} label="Public" compact active={isPublicPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />}
                   </nav>
@@ -303,7 +302,7 @@ export function Header() {
                       void logout();
                       setMobileMenuOpen(false);
                     }}
-                    className="cv-mobile-logout"
+                    className={styles.mobileLogout}
                   >
                     Logout
                   </button>
@@ -334,7 +333,7 @@ function MobileMenuLink({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`cv-mobile-link${active ? " is-active" : ""}${compact ? " is-compact" : ""}`}
+      className={[styles.mobileLink, active && styles.isActive, compact && styles.isCompact].filter(Boolean).join(" ")}
       aria-current={active ? "page" : undefined}
     >
       {label}

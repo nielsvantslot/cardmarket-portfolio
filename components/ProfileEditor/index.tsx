@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { accountService } from '@/lib/services/accountService';
 import type { AuthUser } from '@/lib/types';
+import styles from '@/components/forms/forms.module.css';
 
 interface ProfileEditorProps {
   mode: "onboarding" | "settings";
@@ -79,17 +80,8 @@ export function ProfileEditor({ mode, initialUser, title, description }: Profile
   return (
     <form
       onSubmit={onSubmit}
-      style={{
-        maxWidth: 640,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.85rem",
-        background: "var(--bg-2)",
-        border: "1px solid var(--border)",
-        borderRadius: 14,
-        padding: "1.25rem",
-      }}
+      className={styles.formCard}
+      style={{ maxWidth: 640, margin: "0 auto" }}
     >
       <h1 style={{
         fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
@@ -102,23 +94,23 @@ export function ProfileEditor({ mode, initialUser, title, description }: Profile
         {description}
       </p>
 
-      <label style={labelStyle}>Display Name</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} style={fieldStyle} placeholder="Your display name" />
+      <label className={styles.formLabel}>Display Name</label>
+      <input value={name} onChange={(e) => setName(e.target.value)} className={styles.formInput} placeholder="Your display name" />
 
-      <label style={labelStyle}>Username</label>
+      <label className={styles.formLabel}>Username</label>
       <input
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        style={fieldStyle}
+        className={styles.formInput}
         placeholder="e.g. cardhunter"
         required
       />
 
-      <label style={labelStyle}>Public URL</label>
+      <label className={styles.formLabel}>Public URL</label>
       <input
         value={publicSlug}
         onChange={(e) => setPublicSlug(e.target.value)}
-        style={fieldStyle}
+        className={styles.formInput}
         placeholder="e.g. cardhunter"
         required
       />
@@ -138,69 +130,35 @@ export function ProfileEditor({ mode, initialUser, title, description }: Profile
           gap: "0.5rem",
         }}>
           <span>{previewUrl}</span>
-          <button type="button" onClick={() => void copyShareUrl()} style={smallButtonStyle}>Copy</button>
+          <button type="button" onClick={() => void copyShareUrl()} style={{
+            border: "1px solid var(--border)",
+            borderRadius: 6,
+            padding: "0.25rem 0.5rem",
+            background: "var(--bg-2)",
+            color: "var(--text)",
+            cursor: "pointer",
+            fontSize: "0.75rem",
+          }}>Copy</button>
         </div>
       )}
 
-      <label style={labelStyle}>Bio</label>
+      <label className={styles.formLabel}>Bio</label>
       <textarea
         value={bio}
         onChange={(e) => setBio(e.target.value)}
-        style={{ ...fieldStyle, minHeight: 90, resize: "vertical" }}
+        className={styles.formInput}
+        style={{ minHeight: 90, resize: "vertical" }}
         placeholder="Tell people what you collect"
       />
 
-      {error && <div style={{ color: "var(--red)", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>{error}</div>}
+      {error && <div className={styles.formError}>{error}</div>}
       {saved && !error && mode === "settings" && (
-        <div style={{ color: "var(--green)", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>
-          Profile saved.
-        </div>
+        <div className={styles.formSuccess}>Profile saved.</div>
       )}
 
-      <button type="submit" disabled={loading} style={submitButtonStyle}>
+      <button type="submit" disabled={loading} className={styles.btnPrimary} style={{ marginTop: "0.4rem" }}>
         {loading ? "Saving..." : mode === "onboarding" ? "Finish setup" : "Save changes"}
       </button>
     </form>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  fontSize: "0.7rem",
-  fontFamily: "var(--font-mono)",
-  color: "var(--text-3)",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  marginTop: "0.2rem",
-};
-
-const fieldStyle: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  border: "1px solid var(--border)",
-  borderRadius: 8,
-  padding: "0.65rem 0.75rem",
-  background: "var(--bg-3)",
-  color: "var(--text)",
-  outline: "none",
-};
-
-const submitButtonStyle: React.CSSProperties = {
-  marginTop: "0.4rem",
-  border: "none",
-  borderRadius: 8,
-  padding: "0.65rem 0.9rem",
-  background: "var(--accent)",
-  color: "#fff",
-  fontWeight: 700,
-  fontFamily: "var(--font-display)",
-  cursor: "pointer",
-};
-
-const smallButtonStyle: React.CSSProperties = {
-  border: "1px solid var(--border)",
-  borderRadius: 6,
-  padding: "0.25rem 0.5rem",
-  background: "var(--bg-2)",
-  color: "var(--text)",
-  cursor: "pointer",
-};

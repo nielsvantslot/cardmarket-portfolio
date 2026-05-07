@@ -1,0 +1,9 @@
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}

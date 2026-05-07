@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import styles from "@/components/forms/forms.module.css";
 import { usePortfolioContext } from "@/lib/portfolioContext";
 import type { SealedProduct } from "@/lib/types";
 
@@ -48,75 +49,41 @@ function AddSealedForm({ onClose }: { onClose: () => void }) {
     onClose();
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "0.6rem 0.75rem",
-    background: "var(--bg-3)",
-    border: "1px solid var(--border)",
-    borderRadius: 8,
-    color: "var(--text)",
-    fontFamily: "var(--font-display)",
-    fontSize: "0.875rem",
-    outline: "none",
-    boxSizing: "border-box",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "0.7rem",
-    fontFamily: "var(--font-mono)",
-    color: "var(--text-3)",
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-    marginBottom: "0.35rem",
-    display: "block",
-  };
-
   return (
-    <div style={{
-      background: "var(--bg-2)",
-      border: "1px solid var(--border)",
-      borderRadius: 14,
-      padding: "1.5rem",
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem",
-    }}>
+    <div className={styles.formCard} style={{ gap: "1rem", padding: "1.5rem" }}>
       <div style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em" }}>
         Add Sealed Product
       </div>
 
       {/* Name */}
       <div>
-        <label style={labelStyle}>Product Name *</label>
+        <label className={styles.formLabel}>Product Name *</label>
         <input
-          style={inputStyle}
+          className={styles.formInput}
           placeholder="e.g. Scarlet & Violet Booster Box"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
 
       {/* Set name */}
       <div>
-        <label style={labelStyle}>Set / Series</label>
+        <label className={styles.formLabel}>Set / Series</label>
         <input
-          style={inputStyle}
+          className={styles.formInput}
           placeholder="e.g. Scarlet & Violet, Celebrations"
           value={seriesName}
           onChange={(e) => setSeriesName(e.target.value)}
-          onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
 
       {/* Type + Condition row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
         <div>
-          <label style={labelStyle}>Type</label>
+          <label className={styles.formLabel}>Type</label>
           <select
-            style={{ ...inputStyle, cursor: "pointer" }}
+            className={styles.formInput}
+            style={{ cursor: "pointer" }}
             value={type}
             onChange={(e) => setType(e.target.value as SealedProduct["type"])}
           >
@@ -126,9 +93,10 @@ function AddSealedForm({ onClose }: { onClose: () => void }) {
           </select>
         </div>
         <div>
-          <label style={labelStyle}>Condition</label>
+          <label className={styles.formLabel}>Condition</label>
           <select
-            style={{ ...inputStyle, cursor: "pointer" }}
+            className={styles.formInput}
+            style={{ cursor: "pointer" }}
             value={condition}
             onChange={(e) => setCondition(e.target.value as SealedProduct["condition"])}
           >
@@ -141,35 +109,32 @@ function AddSealedForm({ onClose }: { onClose: () => void }) {
       {/* Qty + Price row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px", gap: "0.75rem" }}>
         <div>
-          <label style={labelStyle}>Quantity</label>
+          <label className={styles.formLabel}>Quantity</label>
           <input
             type="number"
             min={1}
-            style={inputStyle}
+            className={styles.formInput}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
         </div>
         <div>
-          <label style={labelStyle}>Purchase Price (per unit)</label>
+          <label className={styles.formLabel}>Purchase Price (per unit)</label>
           <input
             type="number"
             min={0}
             step={0.01}
-            style={inputStyle}
+            className={styles.formInput}
             placeholder="0.00"
             value={purchasePrice}
             onChange={(e) => setPurchasePrice(e.target.value)}
-            onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
         </div>
         <div>
-          <label style={labelStyle}>Currency</label>
+          <label className={styles.formLabel}>Currency</label>
           <select
-            style={{ ...inputStyle, cursor: "pointer" }}
+            className={styles.formInput}
+            style={{ cursor: "pointer" }}
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
           >
@@ -182,50 +147,25 @@ function AddSealedForm({ onClose }: { onClose: () => void }) {
 
       {/* Notes */}
       <div>
-        <label style={labelStyle}>Notes</label>
+        <label className={styles.formLabel}>Notes</label>
         <input
-          style={inputStyle}
+          className={styles.formInput}
           placeholder="e.g. Anniversary Edition, Language, Condition details..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-          onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
         />
       </div>
 
       {/* Actions */}
       <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "0.25rem" }}>
-        <button
-          onClick={onClose}
-          style={{
-            padding: "0.5rem 1rem",
-            borderRadius: 7,
-            border: "1px solid var(--border)",
-            background: "transparent",
-            color: "var(--text-2)",
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            fontFamily: "var(--font-display)",
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={onClose} className={styles.btnSecondary}>
           Cancel
         </button>
         <button
           onClick={handleAdd}
           disabled={!name.trim()}
-          style={{
-            padding: "0.5rem 1.25rem",
-            borderRadius: 7,
-            border: "none",
-            background: name.trim() ? "var(--accent)" : "var(--bg-3)",
-            color: name.trim() ? "#fff" : "var(--text-3)",
-            fontSize: "0.85rem",
-            fontWeight: 700,
-            fontFamily: "var(--font-display)",
-            cursor: name.trim() ? "pointer" : "not-allowed",
-            transition: "all 0.15s",
-          }}
+          className={styles.btnPrimary}
+          style={{ padding: "0.5rem 1.25rem" }}
         >
           Add Product
         </button>

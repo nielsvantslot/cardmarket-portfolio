@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { authService } from '@/lib/services/authService';
+import styles from '@/components/forms/forms.module.css';
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -60,18 +61,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form
       onSubmit={onSubmit}
-      style={{
-        width: "100%",
-        maxWidth: 440,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.85rem",
-        padding: "1.25rem",
-        borderRadius: 14,
-        border: "1px solid var(--border)",
-        background: "var(--bg-2)",
-      }}
+      className={styles.formCard}
+      style={{ maxWidth: 440, margin: "0 auto" }}
     >
       <h1 style={{ margin: 0, fontSize: "1.6rem", letterSpacing: "-0.04em" }}>
         {isRegister ? "Create account" : "Welcome back"}
@@ -86,7 +77,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
-        style={fieldStyle}
+        className={styles.formInput}
         autoComplete="email"
       />
 
@@ -98,7 +89,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           minLength={8}
-          style={fieldStyle}
+          className={styles.formInput}
           autoComplete={isRegister ? "new-password" : "current-password"}
         />
 
@@ -110,7 +101,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm password"
             minLength={8}
-            style={fieldStyle}
+            className={styles.formInput}
             autoComplete="new-password"
           />
         )}
@@ -125,31 +116,17 @@ export function AuthForm({ mode }: AuthFormProps) {
         </label>
 
         {isRegister && confirmPassword.length > 0 && password !== confirmPassword && (
-          <div style={{ color: "var(--red)", fontFamily: "var(--font-mono)", fontSize: "0.72rem" }}>
-            Passwords do not match.
-          </div>
+          <div className={styles.formError}>Passwords do not match.</div>
         )}
       </div>
 
-      {error && (
-        <div style={{ color: "var(--red)", fontFamily: "var(--font-mono)", fontSize: "0.75rem" }}>{error}</div>
-      )}
+      {error && <div className={styles.formError}>{error}</div>}
 
       <button
         type="submit"
         disabled={loading || !canSubmit}
-        style={{
-          marginTop: "0.35rem",
-          border: "none",
-          borderRadius: 8,
-          padding: "0.65rem 0.9rem",
-          background: "var(--accent)",
-          color: "#fff",
-          fontWeight: 700,
-          fontFamily: "var(--font-display)",
-          cursor: loading ? "not-allowed" : "pointer",
-          opacity: loading || !canSubmit ? 0.6 : 1,
-        }}
+        className={styles.btnPrimary}
+        style={{ marginTop: "0.35rem" }}
       >
         {loading ? "Please wait..." : isRegister ? "Create account" : "Sign in"}
       </button>
@@ -163,14 +140,3 @@ export function AuthForm({ mode }: AuthFormProps) {
     </form>
   );
 }
-
-const fieldStyle: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  border: "1px solid var(--border)",
-  borderRadius: 8,
-  padding: "0.65rem 0.75rem",
-  background: "var(--bg-3)",
-  color: "var(--text)",
-  outline: "none",
-};

@@ -1,6 +1,7 @@
+import { CardItem } from '@/components/CardItem';
 import type { NormalizedCard } from '@/lib/types';
 
-import { CardItem } from './CardItem';
+import styles from './CardList.module.css';
 
 interface CardListProps {
   cards: NormalizedCard[];
@@ -22,19 +23,7 @@ export function CardList({
   animateItems = true,
 }: CardListProps) {
   if (cards.length === 0) {
-    return (
-      <div style={{
-        textAlign: "center",
-        padding: "4rem 2rem",
-        color: "var(--text-3)",
-        fontFamily: "var(--font-mono)",
-        fontSize: "0.85rem",
-        border: "1px dashed var(--border)",
-        borderRadius: 12,
-      }}>
-        {emptyMessage}
-      </div>
-    );
+    return <div className={styles.emptyState}>{emptyMessage}</div>;
   }
 
   return (

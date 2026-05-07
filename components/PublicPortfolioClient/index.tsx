@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 
 import { CardList } from '@/components/CardList';
+import { StatCard } from '@/components/ui/StatCard';
 import {
   getCards,
   normalizeCard,
@@ -136,34 +137,4 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
   );
 }
 
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div style={{
-      background: "var(--bg-2)",
-      border: "1px solid var(--border)",
-      borderRadius: 10,
-      padding: "1.25rem 1.5rem",
-    }}>
-      <div style={{
-        fontSize: "0.7rem",
-        color: "var(--text-3)",
-        fontFamily: "var(--font-mono)",
-        letterSpacing: "0.1em",
-        textTransform: "uppercase",
-        marginBottom: "0.4rem",
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: "1.75rem",
-        fontWeight: 800,
-        fontFamily: "var(--font-display)",
-        letterSpacing: "-0.04em",
-        color: accent ? "var(--green)" : "var(--text)",
-        lineHeight: 1,
-      }}>
-        {value}
-      </div>
-    </div>
-  );
-}
+

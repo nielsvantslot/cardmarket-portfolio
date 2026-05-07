@@ -1,11 +1,10 @@
 "use client";
 
 import { CardItem } from '@/components/CardItem';
+import type { SlotStatus } from '@/components/search/types';
 import { SkeletonCard } from '@/components/SkeletonCard';
 import { useAuth } from '@/lib/authContext';
 import type { NormalizedCard } from '@/lib/types';
-
-import type { SlotStatus } from './types';
 
 interface FeaturedGridProps {
   slots: Array<NormalizedCard | null>;

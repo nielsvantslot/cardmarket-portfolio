@@ -1,4 +1,5 @@
 "use client";
+import styles from "@/components/forms/forms.module.css";
 
 import {
   useEffect,
@@ -51,26 +52,11 @@ export function SetsClient() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search sets by name or id"
-        style={{
-          width: "100%",
-          padding: "0.8rem 0.95rem",
-          background: "var(--bg-2)",
-          border: "1px solid var(--border)",
-          borderRadius: 10,
-          color: "var(--text)",
-          fontFamily: "var(--font-display)",
-          fontSize: "0.95rem",
-          outline: "none",
-          boxSizing: "border-box",
-        }}
-        onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
-        onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+        className="portfolio-search-input"
       />
 
       {error && (
-        <div style={{ color: "var(--red)", fontSize: "0.82rem", fontFamily: "var(--font-mono)" }}>
-          {error}
-        </div>
+        <div className={styles.formError}>{error}</div>
       )}
 
       {loading ? (
