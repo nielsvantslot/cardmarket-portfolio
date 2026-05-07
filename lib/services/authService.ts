@@ -1,6 +1,6 @@
-import type { AuthUser } from "@/lib/types";
+import type { AuthUser } from '@/lib/types';
 
-import { requestJson } from "./httpClient";
+import { requestJson } from './httpClient';
 
 interface AuthResponse {
   user: AuthUser & { username?: string | null; publicSlug?: string | null };
