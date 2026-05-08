@@ -180,7 +180,7 @@ export function SearchControls({ searchQty, onDecrement, onIncrement, onAdd }: S
               color: 'var(--text-2)',
             }}
           >
-            in portfolio: {searchQty}
+            {searchQty}
           </span>
 
           <button

@@ -10,6 +10,7 @@ import Link from 'next/link';
 
 import { CardList } from '@/components/CardList';
 import { PortfolioHistoryChart } from '@/components/PortfolioHistoryChart';
+import { SearchField } from '@/components/ui/SearchField';
 import { StatCard } from '@/components/ui/StatCard';
 import {
   getCards,
@@ -180,11 +181,11 @@ export function PortfolioList() {
                 background: "var(--bg-2)",
                 border: "1px solid var(--border)",
                 borderRadius: 10,
-                padding: "1.25rem 1.5rem",
+                padding: "1.75rem 2rem",
               }}
             >
-              <div className="skeleton" style={{ height: 10, width: "42%", borderRadius: 4, marginBottom: "0.7rem" }} />
-              <div className="skeleton" style={{ height: 30, width: "68%", borderRadius: 6 }} />
+              <div className="skeleton" style={{ height: 10, width: "42%", borderRadius: 4, marginBottom: "0.9rem" }} />
+              <div className="skeleton" style={{ height: 40, width: "68%", borderRadius: 6 }} />
             </div>
           ))}
         </div>
@@ -258,12 +259,12 @@ export function PortfolioList() {
         <StatCard label="Total Cards" value={String(totalCards)} />
         <StatCard label="Unique Cards" value={String(uniqueCards)} />
         <StatCard
-          label="Portfolio Value"
+          label="Portfolio Value €"
           value={cardsWithPrice > 0 ? `~${totalValue.toFixed(2)}` : "—"}
           accent
         />
         <StatCard
-          label="Avg Card Value"
+          label="Avg. Card Value €"
           value={cardsWithPrice > 0 ? `~${(totalValue / cardsWithPrice).toFixed(2)}` : "—"}
         />
       </div>
@@ -283,12 +284,11 @@ export function PortfolioList() {
 
       <PortfolioHistoryChart snapshots={history} />
 
-      <input
-        type="search"
+      <SearchField
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={setQuery}
         placeholder="Search your portfolio"
-        className="portfolio-search-input"
+        clearLabel="Clear portfolio search"
       />
 
       {/* Card grid */}

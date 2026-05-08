@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useAuth } from '@/lib/authContext';
-import { usePortfolioContext } from '@/lib/portfolioContext';
 
 import styles from './Header.module.css';
 
@@ -17,16 +16,15 @@ export function Header() {
   const pathname = usePathname();
   const { user, logout, authLoading } = useAuth();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { entries } = usePortfolioContext();
-  const totalCards = entries.reduce((sum, e) => sum + e.quantity, 0);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
 
   useEffect(() => {
     setAccountMenuOpen(false);
-    setMobileMenuOpen(false);
+    setMobileAccountOpen(false);
   }, [pathname]);
+
   useEffect(() => {
-    if (!mobileMenuOpen) {
+    if (!mobileAccountOpen) {
       document.body.style.overflow = "";
       return;
     }
@@ -35,19 +33,19 @@ export function Header() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileMenuOpen]);
+  }, [mobileAccountOpen]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setMobileMenuOpen(false);
+        setMobileAccountOpen(false);
         setAccountMenuOpen(false);
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [mobileMenuOpen]);
+  }, []);
 
   const isExploreActive = pathname === "/" || pathname === "/search";
   const isSetsActive = pathname === "/sets" || pathname.startsWith("/sets/");
@@ -230,110 +228,190 @@ export function Header() {
             </nav>
           </div>
 
-          <button
-            type="button"
-            className={styles.mobileMenuButton}
-            onClick={() => setMobileMenuOpen((current) => !current)}
-            aria-expanded={mobileMenuOpen}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          >
-            <span className={`${styles.burger} ${mobileMenuOpen ? styles.isOpen : ""}`} aria-hidden>
-              <span />
-              <span />
-              <span />
-            </span>
-          </button>
+          <div className={styles.mobileMenuButtonSpacer} aria-hidden />
         </div>
       </div>
 
-      {mobileMenuOpen && (
+      <nav className={styles.mobileBottomBar} aria-label="Mobile navigation">
+        <div className={styles.mobileBottomBarInner}>
+          <MobileBottomLink href="/" label="Explore" icon="explore" active={isExploreActive} />
+          <MobileBottomLink href="/sets" label="Sets" icon="sets" active={isSetsActive} />
+          <MobileBottomLink href="/portfolio" label="Portfolio" icon="portfolio" active={isPortfolioActive} />
+          <button
+            type="button"
+            className={[styles.mobileBottomItem, mobileAccountOpen && styles.isActive].filter(Boolean).join(" ")}
+            onClick={() => setMobileAccountOpen((current) => !current)}
+            aria-expanded={mobileAccountOpen}
+            aria-controls="mobile-account-sheet"
+            aria-label="Open account actions"
+            disabled={authLoading}
+          >
+            <span className={styles.mobileBottomIcon} aria-hidden>
+              <MobileTabIcon icon="account" active={mobileAccountOpen} />
+            </span>
+            <span className={styles.mobileBottomLabel}>Account</span>
+          </button>
+        </div>
+      </nav>
+
+      {mobileAccountOpen && (
         <div
-          className={styles.mobileMenu}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile navigation"
+          className={styles.mobileSheetBackdrop}
           onClick={(event) => {
             if (event.target === event.currentTarget) {
-              setMobileMenuOpen(false);
+              setMobileAccountOpen(false);
             }
           }}
         >
-          <div className={styles.mobileMenuContent}>
-            <div className={styles.mobileMenuHead}>
+          <section
+            className={styles.mobileAccountSheet}
+            role="dialog"
+            aria-modal="true"
+            id="mobile-account-sheet"
+            aria-label="Account actions"
+          >
+            <div className={styles.mobileSheetHeader}>
+              <div>
+                <div className={styles.mobileSheetHandle} aria-hidden />
+                <div className={styles.mobileSheetTitle}>Account</div>
+              </div>
               <button
                 type="button"
                 className={styles.overlayClose}
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close navigation"
+                onClick={() => setMobileAccountOpen(false)}
+                aria-label="Close account actions"
               >
                 <span aria-hidden>✕</span>
               </button>
             </div>
 
-            <nav className={styles.mobileLinks}>
-              <MobileMenuLink href="/" label="Explore" active={isExploreActive} onNavigate={() => setMobileMenuOpen(false)} />
-              <MobileMenuLink href="/sets" label="Sets" active={isSetsActive} onNavigate={() => setMobileMenuOpen(false)} />
-              <MobileMenuLink href="/portfolio" label={`Portfolio`} active={isPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />
-            </nav>
-
-            <section className={styles.mobileAccountSection} aria-label="Account">
-              {!authLoading && !user && (
-              <nav className={styles.mobileAccountLinks}>
-                  <MobileMenuLink href="/login" label="Login" compact active={pathname === "/login"} onNavigate={() => setMobileMenuOpen(false)} />
-                  <MobileMenuLink href="/register" label="Register" compact active={pathname === "/register"} onNavigate={() => setMobileMenuOpen(false)} />
-                </nav>
-              )}
-
-              {!authLoading && user && (
-                <div className={styles.mobileAccountBlock}>
-                  <div className={styles.mobileAccountMeta}>
-                    <div className={styles.mobileAccountUser}>{user.username ?? "Account"}</div>
-                    <div className={styles.mobileAccountEmail}>{user.email}</div>
-                  </div>
-
-                  <nav className={styles.mobileAccountLinks}>
-                    <MobileMenuLink href="/settings" label="Settings" compact active={isSettingsActive} onNavigate={() => setMobileMenuOpen(false)} />
-                    {user.publicSlug && <MobileMenuLink href={`/u/${user.publicSlug}`} label="Public" compact active={isPublicPortfolioActive} onNavigate={() => setMobileMenuOpen(false)} />}
-                  </nav>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      void logout();
-                      setMobileMenuOpen(false);
-                    }}
-                    className={styles.mobileLogout}
-                  >
-                    Logout
-                  </button>
+            {user ? (
+              <>
+                <div className={styles.mobileSheetIdentity}>
+                  <div className={styles.mobileAccountUser}>{user.username ?? "Account"}</div>
+                  <div className={styles.mobileAccountEmail}>{user.email}</div>
                 </div>
-              )}
-            </section>
-          </div>
+
+                <div className={styles.mobileSheetLinks}>
+                  <SheetLink href="/settings" label="Settings" active={isSettingsActive} onNavigate={() => setMobileAccountOpen(false)} />
+                  {user.publicSlug && (
+                    <SheetLink href={`/u/${user.publicSlug}`} label="Public Portfolio" active={isPublicPortfolioActive} onNavigate={() => setMobileAccountOpen(false)} />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logout();
+                    setMobileAccountOpen(false);
+                  }}
+                  className={styles.mobileLogout}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <div className={styles.mobileSheetLinks}>
+                <SheetLink href="/login" label="Login" active={pathname === "/login"} onNavigate={() => setMobileAccountOpen(false)} />
+                <SheetLink href="/register" label="Register" active={pathname === "/register"} onNavigate={() => setMobileAccountOpen(false)} />
+              </div>
+            )}
+          </section>
         </div>
       )}
     </header>
   );
 }
 
-function MobileMenuLink({
+function MobileBottomLink({
+  href,
+  label,
+  icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: "explore" | "sets" | "portfolio";
+  active?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={[styles.mobileBottomItem, active && styles.isActive].filter(Boolean).join(" ")}
+      aria-current={active ? "page" : undefined}
+      aria-label={label}
+    >
+      <span className={styles.mobileBottomIcon} aria-hidden>
+        <MobileTabIcon icon={icon} active={active} />
+      </span>
+      <span className={styles.mobileBottomLabel}>{label}</span>
+    </Link>
+  );
+}
+
+function MobileTabIcon({
+  icon,
+  active,
+}: {
+  icon: "explore" | "sets" | "portfolio" | "account";
+  active?: boolean;
+}) {
+  const stroke = active ? "var(--text)" : "var(--text-2)";
+
+  if (icon === "explore") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M15.8 8.2 13.9 13.9 8.2 15.8 10.1 10.1Z" />
+      </svg>
+    );
+  }
+
+  if (icon === "sets") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="4" width="7" height="7" rx="1.5" />
+        <rect x="13" y="4" width="7" height="7" rx="1.5" />
+        <rect x="4" y="13" width="7" height="7" rx="1.5" />
+        <rect x="13" y="13" width="7" height="7" rx="1.5" />
+      </svg>
+    );
+  }
+
+  if (icon === "portfolio") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3.5" y="5" width="17" height="14" rx="2" />
+        <path d="M8 11h8" />
+        <path d="M8 14h5" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
+    </svg>
+  );
+}
+
+function SheetLink({
   href,
   label,
   active,
-  compact,
   onNavigate,
 }: {
   href: string;
   label: string;
   active?: boolean;
-  compact?: boolean;
   onNavigate: () => void;
 }) {
   return (
     <Link
       href={href}
       onClick={onNavigate}
-      className={[styles.mobileLink, active && styles.isActive, compact && styles.isCompact].filter(Boolean).join(" ")}
+      className={[styles.mobileSheetLink, active && styles.isActive].filter(Boolean).join(" ")}
       aria-current={active ? "page" : undefined}
     >
       {label}

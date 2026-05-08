@@ -25,7 +25,7 @@ export default function PortfolioPage() {
         alignItems: "center",
       }}>
         <h1 style={{ margin: 0, fontSize: "1.6rem", letterSpacing: "-0.04em" }}>Portfolio requires an account</h1>
-        <p style={{ margin: 0, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>
+        <p className="hide-on-mobile" style={{ margin: 0, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>
           Sign in to sync your cards, sealed products, and value history.
         </p>
         <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.4rem" }}>
@@ -67,7 +67,7 @@ export default function PortfolioPage() {
         alignItems: "center",
       }}>
         <h1 style={{ margin: 0, fontSize: "1.6rem", letterSpacing: "-0.04em" }}>Complete your setup</h1>
-        <p style={{ margin: 0, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>
+        <p className="hide-on-mobile" style={{ margin: 0, color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}>
           Pick your username and public URL to finish onboarding.
         </p>
         <Link href="/onboarding" style={{
@@ -96,7 +96,7 @@ export default function PortfolioPage() {
         }}>
           My Portfolio
         </h1>
-        <p style={{
+        <p className="hide-on-mobile" style={{
           color: "var(--text-3)",
           fontSize: "0.85rem",
           fontFamily: "var(--font-mono)",

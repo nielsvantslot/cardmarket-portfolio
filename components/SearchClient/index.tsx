@@ -10,7 +10,6 @@ import {
   SEARCH_DEBOUNCE_MS,
 } from '@/components/search/constants';
 import { FeaturedGrid } from '@/components/search/FeaturedGrid';
-import { SearchInput } from '@/components/search/SearchInput';
 import {
   SearchError,
   SearchResultCount,
@@ -19,6 +18,7 @@ import { useDebouncedValue } from '@/components/search/useDebouncedValue';
 import { useFeaturedSlots } from '@/components/search/useFeaturedSlots';
 import { useSearchResults } from '@/components/search/useSearchResults';
 import { useVisibleCount } from '@/components/search/useVisibleCount';
+import { SearchField } from '@/components/ui/SearchField';
 
 export function SearchClient() {
   const [query, setQuery] = useState("");
@@ -45,7 +45,14 @@ export function SearchClient() {
 
   return (
     <div className="portfolio-shell">
-      <SearchInput query={query} isSearching={isSearching} onChange={setQuery} />
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        placeholder="Search: charizard 6, xy95, power keepers..."
+        clearLabel="Clear search"
+        autoFocusDesktop
+        showLeadingIcon
+      />
       {error && <SearchError error={error} />}
       <SearchResultCount count={results.length} />
 

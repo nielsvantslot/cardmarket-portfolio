@@ -1,6 +1,4 @@
 "use client";
-import formsStyles from "@/components/forms/forms.module.css";
-
 import {
   useEffect,
   useMemo,
@@ -11,7 +9,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import { CardList } from '@/components/CardList';
+import formsStyles from '@/components/forms/forms.module.css';
 import { SkeletonCard } from '@/components/SkeletonCard';
+import { SearchField } from '@/components/ui/SearchField';
 import { useAuth } from '@/lib/authContext';
 import { searchService } from '@/lib/services/searchService';
 import type { NormalizedCard } from '@/lib/types';
@@ -82,12 +82,11 @@ export function SetDetailClient({ setId }: { setId: string }) {
         {setLabel} ({setId}) · {filteredCards.length}/{cards.length} cards{loading ? " · loading..." : ""}
       </div>
 
-      <input
-        type="text"
+      <SearchField
         value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+        onChange={setFilter}
         placeholder="Filter cards in this set by name or #"
-        className="portfolio-search-input"
+        clearLabel="Clear card filter"
       />
 
       {error && (

@@ -10,7 +10,6 @@ export async function GET() {
     const snapshots = await prisma.portfolioSnapshot.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
-      take: 180,
       select: {
         totalValue: true,
         totalCards: true,

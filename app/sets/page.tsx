@@ -15,7 +15,7 @@ export default function SetsPage() {
         >
           Sets
         </h1>
-        <p style={{ color: "var(--text-3)", fontSize: "0.85rem", fontFamily: "var(--font-mono)" }}>
+        <p className="hide-on-mobile" style={{ color: "var(--text-3)", fontSize: "0.85rem", fontFamily: "var(--font-mono)" }}>
           browse sets by release date and open one to see every card inside
         </p>
       </div>

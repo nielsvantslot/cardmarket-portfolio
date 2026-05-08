@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 
 import { CardList } from '@/components/CardList';
+import { SearchField } from '@/components/ui/SearchField';
 import { StatCard } from '@/components/ui/StatCard';
 import {
   getCards,
@@ -102,7 +103,7 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
         }}>
           {ownerName}&apos;s Portfolio
         </h1>
-        <p style={{ marginTop: "0.35rem", color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>
+        <p className="hide-on-mobile" style={{ marginTop: "0.35rem", color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.78rem" }}>
           Public collection snapshot
         </p>
       </div>
@@ -113,12 +114,11 @@ export function PublicPortfolioClient({ ownerName, entries }: PublicPortfolioCli
         <StatCard label="Portfolio Value" value={totalValue > 0 ? `~${totalValue.toFixed(2)}` : "—"} accent />
       </div>
 
-      <input
-        type="search"
+      <SearchField
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={setQuery}
         placeholder={`Search ${ownerName}'s portfolio`}
-        className="portfolio-search-input"
+        clearLabel="Clear public portfolio search"
       />
 
       <CardList

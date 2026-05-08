@@ -9,6 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import styles from '@/components/forms/forms.module.css';
+import { SearchField } from '@/components/ui/SearchField';
 import { sortSetsNewestFirst } from '@/lib/api';
 import {
   searchService,
@@ -48,12 +49,11 @@ export function SetsClient() {
 
   return (
     <div className={pageStyles.root}>
-      <input
-        type="text"
+      <SearchField
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={setQuery}
         placeholder="Search sets by name or id"
-        className="portfolio-search-input"
+        clearLabel="Clear set search"
       />
 
       {error && (
