@@ -89,7 +89,7 @@ export function PortfolioHistoryChart({ snapshots }: PortfolioHistoryChartProps)
 
       <div className={styles.chartFrame}>
         <ResponsiveContainer>
-          <LineChart data={filteredSnapshots} margin={{ top: 8, right: 16, left: 4, bottom: 8 }}>
+          <LineChart accessibilityLayer={false} data={filteredSnapshots} margin={{ top: 8, right: 16, left: 4, bottom: 8 }}>
             <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis
               dataKey="createdAt"
@@ -106,7 +106,22 @@ export function PortfolioHistoryChart({ snapshots }: PortfolioHistoryChartProps)
               width={44}
             />
             <Tooltip
-              labelFormatter={(label) => new Date(label).toLocaleString()}
+              allowEscapeViewBox={{ x: false, y: false }}
+              reverseDirection={{ x: true, y: false }}
+              cursor={false}
+              wrapperStyle={{
+                maxWidth: "min(78vw, 260px)",
+                pointerEvents: "none",
+              }}
+              labelFormatter={(label) => {
+                const date = new Date(label);
+                return date.toLocaleString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+              }}
               formatter={(value) => {
                 const numeric = typeof value === "number" ? value : Number(value ?? 0);
                 return [`€${numeric.toFixed(2)}`, "Value"];
@@ -116,6 +131,8 @@ export function PortfolioHistoryChart({ snapshots }: PortfolioHistoryChartProps)
                 border: "1px solid var(--border)",
                 background: "var(--bg-3)",
                 color: "var(--text)",
+                maxWidth: "min(78vw, 260px)",
+                whiteSpace: "normal",
               }}
             />
             <Line
@@ -124,7 +141,12 @@ export function PortfolioHistoryChart({ snapshots }: PortfolioHistoryChartProps)
               stroke="var(--green)"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4 }}
+              activeDot={{
+                r: 4,
+                fill: "var(--green)",
+                stroke: "var(--green)",
+                strokeWidth: 1,
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

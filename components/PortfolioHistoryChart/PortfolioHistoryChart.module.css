@@ -3,6 +3,7 @@
   border-radius: 12px;
   background: var(--bg-2);
   padding: 0.8rem 0.6rem 0.35rem;
+  overflow-x: hidden;
 }
 
 .emptyState {
@@ -45,6 +46,27 @@
 .chartFrame {
   width: 100%;
   height: 220px;
+  position: relative;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chartFrame :global(.recharts-wrapper:focus),
+.chartFrame :global(.recharts-wrapper:focus-visible),
+.chartFrame :global(.recharts-surface:focus),
+.chartFrame :global(.recharts-surface:focus-visible),
+.chartFrame :global(.recharts-layer:focus),
+.chartFrame :global(.recharts-layer:focus-visible),
+.chartFrame :global(.recharts-zIndex-layer_-100:focus),
+.chartFrame :global(.recharts-zIndex-layer_-100:focus-visible),
+.chartFrame :global(.recharts-zIndex-layer_-100 g:focus),
+.chartFrame :global(.recharts-zIndex-layer_-100 g:focus-visible),
+.chartFrame :global(svg [tabindex]:focus),
+.chartFrame :global(svg [tabindex]:focus-visible),
+.chartFrame :global(svg g:focus),
+.chartFrame :global(svg g:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 900px) {
