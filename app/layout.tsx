@@ -17,6 +17,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en">
+      <head>
+        <meta name="apple-mobile-web-app-title" content="CardVault" />
+      </head>
       <body>
         <AuthProvider initialUser={initialUser}>
         <PortfolioProvider>
