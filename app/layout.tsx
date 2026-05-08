@@ -3,6 +3,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 import { Header } from '@/components/Header';
+import { AppUpdateBanner } from '@/components/ui/AppUpdateBanner';
 import { getSessionUser } from '@/lib/auth';
 import { AuthProvider } from '@/lib/authContext';
 import { PortfolioProvider } from '@/lib/portfolioContext';
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <main className="app-main">
               {children}
             </main>
+              <AppUpdateBanner />
             <footer style={{
               textAlign: "center",
               padding: "1.5rem 1rem",

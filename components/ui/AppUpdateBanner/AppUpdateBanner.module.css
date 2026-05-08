@@ -1,0 +1,82 @@
+.banner {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-2) 92%, #000 8%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  padding: 0.6rem 0.65rem;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.message {
+  color: var(--text-3);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 0.34rem 0.66rem;
+  font-size: 0.66rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-3));
+  color: var(--text);
+}
+
+.secondaryButton {
+  background: var(--bg-3);
+  color: var(--text-2);
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 901px) {
+  .banner {
+    right: 1rem;
+    left: auto;
+    bottom: 1rem;
+    max-width: 360px;
+  }
+}
